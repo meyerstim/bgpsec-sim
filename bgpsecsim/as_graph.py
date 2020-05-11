@@ -1,7 +1,7 @@
 import bgpsecsim.error as error
 import networkx as nx
 
-def parse_as_rel_file(filename):
+def parse_as_rel_file(filename: str) -> nx.Graph:
     with open(filename, 'r') as f:
         graph = nx.Graph()
 
@@ -27,3 +27,22 @@ def parse_as_rel_file(filename):
             graph.add_edge(as1, as2, customer=customer)
 
     return graph
+
+class ASGraph(object):
+    asyss: List[AS]
+
+    def __init__(self):
+        pass
+
+    def identify_top_isps(self, n: int) -> List[AS]:
+        pass
+
+    def clear_routing_tables(self):
+        for asys in self.asyss:
+            asys.clear_routing_table()
+
+    def find_routes_to(self, target: AS):
+        pass
+
+    def hijack_n_hops(self, victim: AS, attacker: AS, n: int):
+        pass
