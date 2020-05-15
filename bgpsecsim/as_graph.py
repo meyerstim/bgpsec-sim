@@ -1,3 +1,5 @@
+from collections import deque
+
 import bgpsecsim.error as error
 import networkx as nx
 
@@ -37,12 +39,24 @@ class ASGraph(object):
     def identify_top_isps(self, n: int) -> List[AS]:
         pass
 
+    def check_for_customer_provider_cycles(self) -> AS:
+        # Run Floyd-Warshall
+        pass
+
     def clear_routing_tables(self):
         for asys in self.asyss:
             asys.clear_routing_table()
 
     def find_routes_to(self, target: AS):
-        pass
+        routes = dequeue()
+        for neighbor in target.neighbors:
+            routes.append(target.originate_route(neighbor))
+
+        while routes:
+            route = routes.popleft()
+            asys = route.last_asys
+            for neighbor in asys.learn_route(route):
+                routes.append(asys.forward_route(route, neighbor))
 
     def hijack_n_hops(self, victim: AS, attacker: AS, n: int):
         pass
