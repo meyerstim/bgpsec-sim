@@ -1,6 +1,8 @@
 from collections import deque
+from typing import Dict, List, Optional
 
 import bgpsecsim.error as error
+from bgpsecsim.asys import AS, AS_ID, Relation
 import networkx as nx
 
 def parse_as_rel_file(filename: str) -> nx.Graph:
@@ -31,17 +33,45 @@ def parse_as_rel_file(filename: str) -> nx.Graph:
     return graph
 
 class ASGraph(object):
-    asyss: List[AS]
+    __slots__ = ['asyss', 'graph']
 
-    def __init__(self):
-        pass
+    asyss: Dict[AS_ID, AS]
+
+    def __init__(self, graph: nx.Graph):
+        self.asyss = {}
+        for as_id in graph.nodes:
+            self.asyss[as_id] = AS(as_id)
+        for (as_id1, as_id2) in graph.edges:
+            as1 = self.asyss[as_id1]
+            as2 = self.asyss[as_id2]
+            customer = graph.edges[(as_id1, as_id2)]['customer']
+            if customer is None:
+                as1.add_peer(as2)
+                as2.add_peer(as1)
+            elif customer == as_id1:
+                as1.add_provider(as2)
+                as2.add_customer(as1)
+            elif customer == as_id2:
+                as1.add_customer(as2)
+                as2.add_provider(as1)
 
     def identify_top_isps(self, n: int) -> List[AS]:
         pass
 
-    def check_for_customer_provider_cycles(self) -> AS:
-        # Run Floyd-Warshall
-        pass
+    def any_for_customer_provider_cycles(self) -> Optional[AS]:
+        graph = nx.DiGraph()
+        for asys in self.asyss.values():
+            graph.add_node(asys.as_id)
+        for asys in self.asyss.values():
+            for neighbor, relation in asys.neighbors.items():
+                if relation == Relation.CUSTOMER:
+                    weight = -1
+                elif relation == Relation.PEER:
+                    weight = 0
+                elif relation == Relation.PROVIDER:
+                    weight = 1
+                graph.add_edge(asys.as_id, neighbor.as_id, weight=weight)
+        return nx.negative_edge_cycle(graph, weight)
 
     def clear_routing_tables(self):
         for asys in self.asyss:

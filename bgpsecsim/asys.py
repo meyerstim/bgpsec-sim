@@ -1,8 +1,6 @@
 from enum import Enum
 from typing import Dict, List, Optional
 
-from routing_policy import RoutingPolicy
-
 AS_ID = int
 
 class Relation(Enum):
@@ -17,11 +15,11 @@ class AS(object):
     ]
 
     as_id: AS_ID
-    neighbors: Dict[AS, Relation]
+    neighbors: Dict['AS', Relation]
     publishes_rpki: bool
     publishes_path_end: bool
     bgp_sec_enabled: bool
-    routing_table: Dict[AS_ID, Route]
+    routing_table: Dict[AS_ID, 'Route']
 
     def __init__(
         self,
@@ -32,28 +30,24 @@ class AS(object):
     ):
         self.as_id = as_id
         self.neighbors = {}
-        self.publishes_pki = publishes_rpki
+        self.publishes_rpki = publishes_rpki
         self.publishes_path_end = publishes_path_end
         self.bgp_sec_enabled = bgp_sec_enabled
         self.routing_table = {}
 
-    def add_peer(self, asys: AS):
+    def add_peer(self, asys: 'AS'):
         self.neighbors[asys] = Relation.PEER
 
-    def add_customer(self, asys: AS):
+    def add_customer(self, asys: 'AS'):
         self.neighbors[asys] = Relation.CUSTOMER
 
-    def add_provider(self, asys: AS):
+    def add_provider(self, asys: 'AS'):
         self.neighbors[asys] = Relation.PROVIDER
 
-    def get_relation(self, asys: AS) -> Optional[Relation]:
+    def get_relation(self, asys: 'AS') -> Optional[Relation]:
         return self.neigbors.get(asys, None)
 
-    @property
-    def neighbors(self) -> List[AS]:
-        return self.peers + self.customers + self.providers
-
-    def learn_route(self, route: Route) -> List[AS]:
+    def learn_route(self, route: 'Route') -> List['AS']:
         """Learn about a new route.
 
         Returns a list of ASs to advertise route to.
@@ -77,7 +71,7 @@ class AS(object):
             forward_to.extend(self.providers)
         return forward_to
 
-    def originate_route(self, next_hop: AS) -> Route:
+    def originate_route(self, next_hop: 'AS') -> 'Route':
         return Route(
             path=[self, next_hop],
             origin_invalid=False,
@@ -85,7 +79,7 @@ class AS(object):
             authenticated=self.bgp_sec_enabled,
         )
 
-    def forward_route(self, route: Route, next_hop: AS) -> Route:
+    def forward_route(self, route: 'Route', next_hop: 'AS') -> 'Route':
         return Route(
             path=route.path + [next_hop],
             origin_invalid=route.origin_invalid,
@@ -108,7 +102,7 @@ class Route(object):
     def __init__(
         self,
         path: List[AS],
-        origin_invalid: bool
+        origin_invalid: bool,
         path_end_invalid: bool,
         authenticated: bool,
     ):
@@ -133,4 +127,12 @@ class Route(object):
     def final(self) -> AS:
         return self.path[-1]
 
-Route = List[AS_ID]
+class RoutingPolicy(object):
+    def accept_route(self, route: Route) -> bool:
+        pass
+
+    def prefer_route(self, current: Route, new: Route) -> bool:
+        pass
+
+    def forward_to(self, route: Route, relation: Relation) -> bool:
+        pass
