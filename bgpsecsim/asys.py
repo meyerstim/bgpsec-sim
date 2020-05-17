@@ -141,6 +141,9 @@ class Route(object):
     def final(self) -> AS:
         return self.path[-1]
 
+    def contains_cycle(self) -> bool:
+        return len(self.path) != len(set(self.path))
+
     def __str__(self) -> AS:
         return ','.join((str(asys.as_id) for asys in self.path))
 

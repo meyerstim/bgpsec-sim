@@ -28,24 +28,29 @@ def check_graph(as_rel_file):
 
 @cli.command()
 @click.argument('as-rel-file')
-def figure2a(as_rel_file):
+@click.argument('target-asn', type=int)
+def figure2a(as_rel_file, target_asn):
     nx_graph = as_graph.parse_as_rel_file(as_rel_file)
 
     graph = ASGraph(nx_graph)
     print("Loaded graph")
 
-    origin_id = random.choice(list(graph.asyss.keys()))
+    # origin_id = random.choice(list(graph.asyss.keys()))
+    origin_id = int(target_asn)
     origin = graph.get_asys(origin_id)
+
+    # path = nx.shortest_path(nx_graph, 205970, origin_id)
 
     print(f"Finding routes to AS {origin_id}")
     graph.find_routes_to(origin)
 
     path_lengths = {}
     for asys in graph.asyss.values():
-        if origin_id not in asys.routing_table:
-            print(f"AS {asys.as_id} has no path to {origin_id}")
-            continue
-        path_len = asys.routing_table[origin.as_id].length
+        if origin_id in asys.routing_table:
+            path_len = asys.routing_table[origin.as_id].length
+        else:
+            # print(f"AS {asys.as_id} has no path to {origin_id}")
+            path_len = -1
         if path_len not in path_lengths:
             path_lengths[path_len] = 0
         path_lengths[path_len] += 1

@@ -4,7 +4,7 @@ from asys import Relation, Route, RoutingPolicy
 
 class DefaultPolicy(RoutingPolicy):
     def accept_route(self, route: Route) -> bool:
-        return True
+        return not route.contains_cycle()
 
     def prefer_route(self, current: Route, new: Route) -> bool:
         assert current.final == new.final, "routes must have same final AS"
@@ -39,16 +39,17 @@ class DefaultPolicy(RoutingPolicy):
 
 class RPKIPolicy(DefaultPolicy):
     def accept_route(self, route: Route) -> bool:
-        return not route.origin_invalid
+        return super().accept_route(route) and not route.origin_invalid
 
 class PathEndValidationPolicy(DefaultPolicy):
     def accept_route(self, route: Route) -> bool:
-        return not route.path_end_invalid
+        return super().accept_route(route) and not route.path_end_invalid
 
 class BGPsecHighSecPolicy(DefaultPolicy):
     def accept_route(self, route: Route) -> bool:
-        return route.authenticated or (
-            not route.first_hop.bgp_sec_enabled and not route.origin_invalid)
+        return (super().accept_route(route) and
+                (route.authenticated or (
+                    not route.first_hop.bgp_sec_enabled and not route.origin_invalid)))
 
     def preference_rules(self) -> Generator[Callable[[Route], int], None, None]:
         # Prefer authenticated routes
@@ -65,8 +66,9 @@ class BGPsecHighSecPolicy(DefaultPolicy):
 
 class BGPsecMedSecPolicy(DefaultPolicy):
     def accept_route(self, route: Route) -> bool:
-        return route.authenticated or (
-            not route.first_hop.bgp_sec_enabled and not route.origin_invalid)
+        return (super().accept_route(route) and
+                (route.authenticated or (
+                    not route.first_hop.bgp_sec_enabled and not route.origin_invalid)))
 
     def preference_rules(self) -> Generator[Callable[[Route], int], None, None]:
         # 1. Local preferences
@@ -83,8 +85,9 @@ class BGPsecMedSecPolicy(DefaultPolicy):
 
 class BGPsecLowSecPolicy(DefaultPolicy):
     def accept_route(self, route: Route) -> bool:
-        return route.authenticated or (
-            not route.first_hop.bgp_sec_enabled and not route.origin_invalid)
+        return (super().accept_route(route) and
+                (route.authenticated or (
+                    not route.first_hop.bgp_sec_enabled and not route.origin_invalid)))
 
     def preference_rules(self) -> Generator[Callable[[Route], int], None, None]:
         # 1. Local preferences
