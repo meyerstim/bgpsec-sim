@@ -69,13 +69,8 @@ class ASGraph(object):
         for asys in self.asyss.values():
             for neighbor, relation in asys.neighbors.items():
                 if relation == Relation.CUSTOMER:
-                    weight = -1
-                elif relation == Relation.PEER:
-                    weight = 0
-                elif relation == Relation.PROVIDER:
-                    weight = 1
-                graph.add_edge(asys.as_id, neighbor.as_id, weight=weight)
-        return nx.negative_edge_cycle(graph, weight)
+                    graph.add_edge(asys.as_id, neighbor.as_id)
+        return not nx.is_directed_acyclic_graph(graph)
 
     def clear_routing_tables(self):
         for asys in self.asyss:
