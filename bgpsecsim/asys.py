@@ -10,12 +10,13 @@ class Relation(Enum):
 
 class AS(object):
     __slots__ = [
-        'as_id', 'neighbors', 'publishes_rpki', 'publishes_path_end', 'bgp_sec_enabled',
+        'as_id', 'neighbors', 'policy', 'publishes_rpki', 'publishes_path_end', 'bgp_sec_enabled',
         'routing_table'
     ]
 
     as_id: AS_ID
     neighbors: Dict['AS', Relation]
+    policy: 'RoutingPolicy'
     publishes_rpki: bool
     publishes_path_end: bool
     bgp_sec_enabled: bool
@@ -24,16 +25,25 @@ class AS(object):
     def __init__(
         self,
         as_id: AS_ID,
+        policy: 'RoutingPolicy',
         publishes_rpki: bool = False,
         publishes_path_end: bool = False,
         bgp_sec_enabled: bool = False
     ):
         self.as_id = as_id
+        self.policy = policy
         self.neighbors = {}
         self.publishes_rpki = publishes_rpki
         self.publishes_path_end = publishes_path_end
         self.bgp_sec_enabled = bgp_sec_enabled
-        self.routing_table = {}
+
+        self_route = Route(
+            [self],
+            origin_invalid=False,
+            path_end_invalid=False,
+            authenticated=True,
+        )
+        self.routing_table = { as_id: self_route }
 
     def add_peer(self, asys: 'AS'):
         self.neighbors[asys] = Relation.PEER
@@ -45,13 +55,16 @@ class AS(object):
         self.neighbors[asys] = Relation.PROVIDER
 
     def get_relation(self, asys: 'AS') -> Optional[Relation]:
-        return self.neigbors.get(asys, None)
+        return self.neighbors.get(asys, None)
 
     def learn_route(self, route: 'Route') -> List['AS']:
         """Learn about a new route.
 
         Returns a list of ASs to advertise route to.
         """
+        if route.origin == self:
+            return []
+
         if not self.policy.accept_route(route):
             return []
 
@@ -62,14 +75,13 @@ class AS(object):
 
         self.routing_table[origin_id] = route
 
-        forward_to = []
-        if self.policy.forward_to_peers(route):
-            forward_to.extend(self.peers)
-        if self.policy.forward_to_customers(route):
-            forward_to.extend(self.customers)
-        if self.policy.forward_to_providers(route):
-            forward_to.extend(self.providers)
-        return forward_to
+        forward_to_relations = set((relation
+                                    for relation in Relation
+                                    if self.policy.forward_to(route, relation)))
+
+        return [neighbor
+                for neighbor, relation in self.neighbors.items()
+                if relation in forward_to_relations]
 
     def originate_route(self, next_hop: 'AS') -> 'Route':
         return Route(
@@ -91,9 +103,11 @@ class AS(object):
         self.routing_table.clear()
 
 class Route(object):
+    __slots__ = ['path', 'origin_invalid', 'path_end_invalid', 'authenticated']
+
     path: List[AS]
     # Whether the origin has no valid RPKI record and one is expected.
-    origin_valid: bool
+    origin_invalid: bool
     # Whether the first hop has no valid path-end record and one is expected.
     path_end_invalid: bool
     # Whether the path is authenticated with BGPsec.
@@ -113,7 +127,7 @@ class Route(object):
 
     @property
     def length(self) -> int:
-        return len(path)
+        return len(self.path)
 
     @property
     def origin(self) -> AS:
@@ -126,6 +140,22 @@ class Route(object):
     @property
     def final(self) -> AS:
         return self.path[-1]
+
+    def __str__(self) -> AS:
+        return ','.join((str(asys.as_id) for asys in self.path))
+
+    def __repr__(self) -> AS:
+        s = str(self)
+        flags = []
+        if self.origin_invalid:
+            flags.append('origin_invalid')
+        if self.path_end_invalid:
+            flags.append('path_end_invalid')
+        if self.authenticated:
+            flags.append('authenticated')
+        if flags:
+            s += " " + " ".join(flags)
+        return s
 
 class RoutingPolicy(object):
     def accept_route(self, route: Route) -> bool:
