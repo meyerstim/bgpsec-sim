@@ -28,6 +28,24 @@ def check_graph(as_rel_file):
 
 @cli.command()
 @click.argument('as-rel-file')
+@click.argument('origin-asn', type=int)
+@click.argument('final-asn', type=int)
+def find_route(as_rel_file, origin_asn, final_asn):
+    nx_graph = as_graph.parse_as_rel_file(as_rel_file)
+
+    graph = ASGraph(nx_graph)
+    print("Loaded graph")
+
+    origin = graph.get_asys(origin_asn)
+    final = graph.get_asys(final_asn)
+
+    print(f"Finding routes to AS {origin_asn}")
+    graph.find_routes_to(origin)
+
+    print(final.routing_table.get(origin_asn, None))
+
+@cli.command()
+@click.argument('as-rel-file')
 @click.argument('target-asn', type=int)
 def figure2a(as_rel_file, target_asn):
     nx_graph = as_graph.parse_as_rel_file(as_rel_file)
