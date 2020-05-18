@@ -58,6 +58,10 @@ def figure2a(as_rel_file, target_asn):
     origin = graph.get_asys(origin_id)
 
     # path = nx.shortest_path(nx_graph, 205970, origin_id)
+    print(f"Determining reachability to AS {origin_id}")
+    reachable_from = graph.determine_reachability(origin_id)
+    total_asyss = len(graph.asyss)
+    print(f"AS {origin_id} is reachable from {reachable_from} / {total_asyss} ASs")
 
     print(f"Finding routes to AS {origin_id}")
     graph.find_routes_to(origin)
@@ -72,8 +76,13 @@ def figure2a(as_rel_file, target_asn):
         if path_len not in path_lengths:
             path_lengths[path_len] = 0
         path_lengths[path_len] += 1
+
+    # Cross-check path routing results with reachability.
+    assert path_lengths.get(-1, 0) + reachable_from == total_asyss
+
     for path_len, count in sorted(path_lengths.items()):
         print(f"path_length: {path_len}, count: {count}")
+
 
 @cli.command()
 def hello():

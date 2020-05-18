@@ -62,6 +62,26 @@ class ASGraph(object):
     def identify_top_isps(self, n: int) -> List[AS]:
         pass
 
+    def determine_reachability(self, as_id: AS_ID) -> int:
+        """Returns how many ASs can route to the given AS (itself included)."""
+        graph = nx.DiGraph()
+        for asys in self.asyss.values():
+            graph.add_node(('l', asys.as_id))
+            graph.add_node(('r', asys.as_id))
+            graph.add_edge(('l', asys.as_id), ('r', asys.as_id))
+        for asys in self.asyss.values():
+            for neighbor, relation in asys.neighbors.items():
+                if relation == Relation.CUSTOMER:
+                    graph.add_edge(('r', asys.as_id), ('r', neighbor.as_id))
+                elif relation == Relation.PEER:
+                    graph.add_edge(('l', asys.as_id), ('r', neighbor.as_id))
+                elif relation == Relation.PROVIDER:
+                    graph.add_edge(('l', asys.as_id), ('l', neighbor.as_id))
+        n_ancestors = len([as_id
+                           for side, as_id in nx.ancestors(graph, ('r', as_id))
+                           if side == 'l'])
+        return n_ancestors
+
     def any_customer_provider_cycles(self) -> bool:
         graph = nx.DiGraph()
         for asys in self.asyss.values():
