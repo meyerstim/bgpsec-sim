@@ -59,7 +59,7 @@ def figure2a(as_rel_file, target_asn):
 
     # path = nx.shortest_path(nx_graph, 205970, origin_id)
     print(f"Determining reachability to AS {origin_id}")
-    reachable_from = graph.determine_reachability(origin_id)
+    reachable_from = graph.determine_reachability_one(origin_id)
     total_asyss = len(graph.asyss)
     print(f"AS {origin_id} is reachable from {reachable_from} / {total_asyss} ASs")
 

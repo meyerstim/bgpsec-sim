@@ -62,12 +62,44 @@ class ASGraph(object):
     def identify_top_isps(self, n: int) -> List[AS]:
         pass
 
-    def determine_reachability(self, as_id: AS_ID) -> int:
-        """Returns how many ASs can route to the given AS (itself included)."""
+    def determine_reachability_one(self, as_id: AS_ID) -> int:
+        """Returns how many ASs can the given AS, itself included."""
+        graph = self._build_reachability_graph()
+        n_ancestors = len([as_id
+                           for side, as_id in nx.ancestors(graph, ('r', as_id))
+                           if side == 'l'])
+        return n_ancestors
+
+    def determine_reachability(self) -> Dict[AS_ID, int]:
+        """Returns how many ASs can reach each AS, themselves included."""
+        graph = self._build_reachability_graph()
+
+        # Process nodes in topological order, keeping track of which ones they are reachable from
+        # with a bitfield.
+        queue = deque()
+        remaining_edges = {}
+        for node in graph:
+            remaining_edges[node] = graph.in_degree(node)
+            if remaining_edges[node] == 0:
+                del remaining_edges[node]
+                queue.append(node)
+        while queue:
+            node = queue.popleft()
+            for next_node in graph.successors(node):
+                graph.nodes[next_node]['reachable_from'] |= graph.nodes[node]['reachable_from']
+                remaining_edges[next_node] -= 1
+                if remaining_edges[next_node] == 0:
+                    del remaining_edges[next_node]
+                    queue.append(next_node)
+
+        return { as_id: bit_count(graph.nodes[('r', as_id)]['reachable_from'])
+                 for as_id in self.asyss }
+
+    def _build_reachability_graph(self) -> nx.DiGraph:
         graph = nx.DiGraph()
         for asys in self.asyss.values():
-            graph.add_node(('l', asys.as_id))
-            graph.add_node(('r', asys.as_id))
+            graph.add_node(('l', asys.as_id), reachable_from=(1 << asys.as_id))
+            graph.add_node(('r', asys.as_id), reachable_from=0)
             graph.add_edge(('l', asys.as_id), ('r', asys.as_id))
         for asys in self.asyss.values():
             for neighbor, relation in asys.neighbors.items():
@@ -77,10 +109,7 @@ class ASGraph(object):
                     graph.add_edge(('l', asys.as_id), ('r', neighbor.as_id))
                 elif relation == Relation.PROVIDER:
                     graph.add_edge(('l', asys.as_id), ('l', neighbor.as_id))
-        n_ancestors = len([as_id
-                           for side, as_id in nx.ancestors(graph, ('r', as_id))
-                           if side == 'l'])
-        return n_ancestors
+        return graph
 
     def any_customer_provider_cycles(self) -> bool:
         graph = nx.DiGraph()
@@ -109,3 +138,6 @@ class ASGraph(object):
 
     def hijack_n_hops(self, victim: AS, attacker: AS, n: int):
         pass
+
+def bit_count(bitfield: int) -> int:
+    return bin(bitfield).count('1')
