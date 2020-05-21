@@ -1,3 +1,4 @@
+import abc
 from enum import Enum
 from typing import Dict, List, Optional
 
@@ -45,17 +46,23 @@ class AS(object):
         )
         self.routing_table = { as_id: self_route }
 
-    def add_peer(self, asys: 'AS'):
+    def add_peer(self, asys: 'AS') -> None:
         self.neighbors[asys] = Relation.PEER
 
-    def add_customer(self, asys: 'AS'):
+    def add_customer(self, asys: 'AS') -> None:
         self.neighbors[asys] = Relation.CUSTOMER
 
-    def add_provider(self, asys: 'AS'):
+    def add_provider(self, asys: 'AS') -> None:
         self.neighbors[asys] = Relation.PROVIDER
 
     def get_relation(self, asys: 'AS') -> Optional[Relation]:
         return self.neighbors.get(asys, None)
+
+    def get_route(self, as_id: AS_ID) -> Optional['Route']:
+        return self.routing_table.get(as_id, None)
+
+    def force_route(self, route: 'Route') -> None:
+        self.routing_table[route.origin.as_id] = route
 
     def learn_route(self, route: 'Route') -> List['AS']:
         """Learn about a new route.
@@ -144,10 +151,10 @@ class Route(object):
     def contains_cycle(self) -> bool:
         return len(self.path) != len(set(self.path))
 
-    def __str__(self) -> AS:
+    def __str__(self) -> str:
         return ','.join((str(asys.as_id) for asys in self.path))
 
-    def __repr__(self) -> AS:
+    def __repr__(self) -> str:
         s = str(self)
         flags = []
         if self.origin_invalid:
@@ -160,12 +167,15 @@ class Route(object):
             s += " " + " ".join(flags)
         return s
 
-class RoutingPolicy(object):
+class RoutingPolicy(abc.ABC):
+    @abc.abstractmethod
     def accept_route(self, route: Route) -> bool:
         pass
 
+    @abc.abstractmethod
     def prefer_route(self, current: Route, new: Route) -> bool:
         pass
 
+    @abc.abstractmethod
     def forward_to(self, route: Route, relation: Relation) -> bool:
         pass

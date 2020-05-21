@@ -1,6 +1,6 @@
 from typing import Callable, Generator, Optional
 
-from asys import Relation, Route, RoutingPolicy
+from bgpsecsim.asys import Relation, Route, RoutingPolicy
 
 class DefaultPolicy(RoutingPolicy):
     def accept_route(self, route: Route) -> bool:

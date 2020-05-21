@@ -2,16 +2,16 @@ import unittest
 import sys
 import os
 
-import as_graph
-from asys import Relation
-from as_graph import ASGraph
+import bgpsecsim.as_graph as as_graph
+from bgpsecsim.asys import Relation
+from bgpsecsim.as_graph import ASGraph
 
 AS_REL_FILEPATH = os.path.join(os.path.dirname(__file__), 'fixtures', 'as-rel.txt')
 
 class TestASGraph(unittest.TestCase):
 
     def test_parse_as_rel_file(self):
-        graph = bgpsecsim.as_graph.parse_as_rel_file(AS_REL_FILEPATH)
+        graph = as_graph.parse_as_rel_file(AS_REL_FILEPATH)
         for i in range(1, 14):
             assert i in graph.nodes
         assert graph.edges[(1, 2)]['customer'] == 2

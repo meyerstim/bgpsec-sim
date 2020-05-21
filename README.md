@@ -14,6 +14,17 @@ $ pipenv install
 Run the command line utility
 
 ```bash
-$ pipenv run python bgpsecsim
+$ pipenv run python -m bgpsecsim
 ```
 
+Run the type checker
+
+```bash
+$ pipenv run mypy .
+```
+
+Run the tests
+
+```bash
+$ pipenv run python -m unittest
+```

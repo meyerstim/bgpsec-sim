@@ -2,8 +2,10 @@ import click
 import networkx as nx
 import random
 
-import as_graph
-from as_graph import ASGraph
+import bgpsecsim.as_graph as as_graph
+import bgpsecsim.experiments as experiments
+import bgpsecsim.routing_policy as routing_policy
+from bgpsecsim.as_graph import ASGraph
 
 @click.group()
 def cli():
@@ -47,17 +49,15 @@ def find_route(as_rel_file, origin_asn, final_asn):
 @cli.command()
 @click.argument('as-rel-file')
 @click.argument('target-asn', type=int)
-def figure2a(as_rel_file, target_asn):
+def get_path_lengths(as_rel_file, target_asn):
     nx_graph = as_graph.parse_as_rel_file(as_rel_file)
 
-    graph = ASGraph(nx_graph)
+    graph = ASGraph(nx_graph, policy=routing_policy.RPKIPolicy())
     print("Loaded graph")
 
-    # origin_id = random.choice(list(graph.asyss.keys()))
     origin_id = int(target_asn)
     origin = graph.get_asys(origin_id)
 
-    # path = nx.shortest_path(nx_graph, 205970, origin_id)
     print(f"Determining reachability to AS {origin_id}")
     reachable_from = graph.determine_reachability_one(origin_id)
     total_asyss = len(graph.asyss)
@@ -68,11 +68,8 @@ def figure2a(as_rel_file, target_asn):
 
     path_lengths = {}
     for asys in graph.asyss.values():
-        if origin_id in asys.routing_table:
-            path_len = asys.routing_table[origin.as_id].length
-        else:
-            # print(f"AS {asys.as_id} has no path to {origin_id}")
-            path_len = -1
+        route = asys.get_route(origin.as_id)
+        path_len = route.length if route else -1
         if path_len not in path_lengths:
             path_lengths[path_len] = 0
         path_lengths[path_len] += 1
@@ -83,10 +80,25 @@ def figure2a(as_rel_file, target_asn):
     for path_len, count in sorted(path_lengths.items()):
         print(f"path_length: {path_len}, count: {count}")
 
-
 @cli.command()
-def hello():
-    click.echo('Hello world')
+@click.option('-s', '--seed', type=int)
+@click.option('--trials', type=int, default=1)
+@click.argument('as-rel-file')
+def figure2a(seed, trials, as_rel_file):
+    if seed is not None:
+        random.seed(seed)
+
+    nx_graph = as_graph.parse_as_rel_file(as_rel_file)
+    print("Loaded graph")
+
+    as_ids = list(nx_graph.nodes)
+    trials = [random.choices(as_ids, k=2) for _ in range(trials)]
+
+    # results = experiments.figure2a_line_4_rpki(nx_graph, trials)
+    # print("RPKI (full deployment): ", results)
+
+    results = experiments.figure2a_line_5_bgpsec(nx_graph, trials)
+    print("BGPsec (full deployment, legacy allowed): ", results)
 
 if __name__ == '__main__':
     cli()
