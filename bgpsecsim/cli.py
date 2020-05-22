@@ -97,13 +97,13 @@ def figure2a(seed, trials, as_rel_file):
     results = experiments.figure2a_line_1_next_as(nx_graph, 100, trials)
     print("Next-AS: ", results)
 
-    results = experiments.figure2a_line_2(nx_graph, 100, trials)
+    results = experiments.figure2a_line_2_bgpsec_partial(nx_graph, 100, trials)
     print("BGPsec in partial deployment: ", results)
 
     results = experiments.figure2a_line_4_rpki(nx_graph, trials)
     print("RPKI (full deployment): ", results)
 
-    results = experiments.figure2a_line_5_bgpsec_full(nx_graph, trials)
+    results = experiments.figure2a_line_5_bgpsec_high_full(nx_graph, trials)
     print("BGPsec (full deployment, legacy allowed): ", results)
 
 if __name__ == '__main__':
