@@ -94,10 +94,16 @@ def figure2a(seed, trials, as_rel_file):
     as_ids = list(nx_graph.nodes)
     trials = [random.choices(as_ids, k=2) for _ in range(trials)]
 
-    # results = experiments.figure2a_line_4_rpki(nx_graph, trials)
-    # print("RPKI (full deployment): ", results)
+    results = experiments.figure2a_line_1_next_as(nx_graph, 100, trials)
+    print("Next-AS: ", results)
 
-    results = experiments.figure2a_line_5_bgpsec(nx_graph, trials)
+    results = experiments.figure2a_line_2(nx_graph, 100, trials)
+    print("BGPsec in partial deployment: ", results)
+
+    results = experiments.figure2a_line_4_rpki(nx_graph, trials)
+    print("RPKI (full deployment): ", results)
+
+    results = experiments.figure2a_line_5_bgpsec_full(nx_graph, trials)
     print("BGPsec (full deployment, legacy allowed): ", results)
 
 if __name__ == '__main__':

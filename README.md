@@ -28,3 +28,9 @@ Run the tests
 ```bash
 $ pipenv run python -m unittest
 ```
+
+Run the notebook
+
+```bash
+$ pipenv run jupyter notebook
+```

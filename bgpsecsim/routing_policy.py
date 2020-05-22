@@ -47,9 +47,9 @@ class PathEndValidationPolicy(DefaultPolicy):
 
 class BGPsecHighSecPolicy(DefaultPolicy):
     def accept_route(self, route: Route) -> bool:
-        return (super().accept_route(route) and
-                (route.authenticated or (
-                    not route.first_hop.bgp_sec_enabled and not route.origin_invalid)))
+        # Rule should actually be to reject unauthenticated routes if all ASs on it have
+        # bgp_sec_enabled, but that is less convenient in our simulation.
+        return super().accept_route(route) and not route.origin_invalid
 
     def preference_rules(self) -> Generator[Callable[[Route], int], None, None]:
         # Prefer authenticated routes
@@ -66,9 +66,9 @@ class BGPsecHighSecPolicy(DefaultPolicy):
 
 class BGPsecMedSecPolicy(DefaultPolicy):
     def accept_route(self, route: Route) -> bool:
-        return (super().accept_route(route) and
-                (route.authenticated or (
-                    not route.first_hop.bgp_sec_enabled and not route.origin_invalid)))
+        # Rule should actually be to reject unauthenticated routes if all ASs on it have
+        # bgp_sec_enabled, but that is less convenient in our simulation.
+        return super().accept_route(route) and not route.origin_invalid
 
     def preference_rules(self) -> Generator[Callable[[Route], int], None, None]:
         # 1. Local preferences
@@ -85,9 +85,9 @@ class BGPsecMedSecPolicy(DefaultPolicy):
 
 class BGPsecLowSecPolicy(DefaultPolicy):
     def accept_route(self, route: Route) -> bool:
-        return (super().accept_route(route) and
-                (route.authenticated or (
-                    not route.first_hop.bgp_sec_enabled and not route.origin_invalid)))
+        # Rule should actually be to reject unauthenticated routes if all ASs on it have
+        # bgp_sec_enabled, but that is less convenient in our simulation.
+        return super().accept_route(route) and not route.origin_invalid
 
     def preference_rules(self) -> Generator[Callable[[Route], int], None, None]:
         # 1. Local preferences

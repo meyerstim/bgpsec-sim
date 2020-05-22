@@ -37,14 +37,14 @@ class AS(object):
         self.publishes_rpki = publishes_rpki
         self.publishes_path_end = publishes_path_end
         self.bgp_sec_enabled = bgp_sec_enabled
+        self.routing_table = {}
+        self.reset_routing_table()
 
-        self_route = Route(
-            [self],
-            origin_invalid=False,
-            path_end_invalid=False,
-            authenticated=True,
-        )
-        self.routing_table = { as_id: self_route }
+    def neighbor_counts_by_relation(self) -> Dict[Relation, int]:
+        counts = { relation: 0 for relation in Relation }
+        for relation in self.neighbors.values():
+            counts[relation] += 1
+        return counts
 
     def add_peer(self, asys: 'AS') -> None:
         self.neighbors[asys] = Relation.PEER
@@ -106,8 +106,14 @@ class AS(object):
             authenticated=route.authenticated and next_hop.bgp_sec_enabled,
         )
 
-    def clear_routing_table(self):
+    def reset_routing_table(self) -> None:
         self.routing_table.clear()
+        self.routing_table[self.as_id] = Route(
+            [self],
+            origin_invalid=False,
+            path_end_invalid=False,
+            authenticated=True,
+        )
 
 class Route(object):
     __slots__ = ['path', 'origin_invalid', 'path_end_invalid', 'authenticated']

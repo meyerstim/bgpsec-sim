@@ -1,6 +1,6 @@
 from collections import deque
 import networkx as nx
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Tuple
 
 import bgpsecsim.error as error
 from bgpsecsim.asys import AS, AS_ID, Relation, Route, RoutingPolicy
@@ -60,7 +60,11 @@ class ASGraph(object):
         return self.asyss.get(as_id, None)
 
     def identify_top_isps(self, n: int) -> List[AS]:
-        pass
+        """Top ISPs by customer degree."""
+        isps = [(asys, asys.neighbor_counts_by_relation())
+                for asys in self.asyss.values()]
+        isps.sort(key=lambda pair: -pair[1][Relation.CUSTOMER])
+        return [asys for asys, _ in isps[:n]]
 
     def determine_reachability_one(self, as_id: AS_ID) -> int:
         """Returns how many ASs can the given AS, itself included."""
@@ -123,7 +127,7 @@ class ASGraph(object):
 
     def clear_routing_tables(self) -> None:
         for asys in self.asyss.values():
-            asys.clear_routing_table()
+            asys.reset_routing_table()
 
     def find_routes_to(self, target: AS) -> None:
         routes: deque = deque()
@@ -137,26 +141,36 @@ class ASGraph(object):
                 routes.append(asys.forward_route(route, neighbor))
 
     def hijack_n_hops(self, victim: AS, attacker: AS, n: int) -> None:
-        if n == 1:
-            bad_route = Route(
-                [victim, attacker],
-                origin_invalid=False,
-                path_end_invalid=True,
-                authenticated=False
-            )
-            attacker.force_route(bad_route)
+        if n < 1:
+            raise ValueError("number of hops must be at least 1")
 
-            routes: deque = deque()
-            for neighbor in attacker.neighbors:
-                routes.append(attacker.forward_route(bad_route, neighbor))
+        # Find some valid route to the victim for the attacker to extend.
+        base_route = None
+        for asys in self.asyss.values():
+            route = asys.get_route(victim.as_id)
+            if route and route.length == n:
+                base_route = route
+                break
 
-            while routes:
-                route = routes.popleft()
-                asys = route.final
-                for neighbor in asys.learn_route(route):
-                    routes.append(asys.forward_route(route, neighbor))
-        else:
-            raise NotImplementedError()
+        if base_route is None:
+            raise error.NoRouteError(f"No {n - 1}-hop routes to {victim.as_id}")
+
+        bad_route = Route(
+            base_route.path + [attacker],
+            origin_invalid=False,
+            path_end_invalid=n == 1,
+            authenticated=False
+        )
+
+        routes: deque = deque()
+        for neighbor in attacker.neighbors:
+            routes.append(attacker.forward_route(bad_route, neighbor))
+
+        while routes:
+            route = routes.popleft()
+            asys = route.final
+            for neighbor in asys.learn_route(route):
+                routes.append(asys.forward_route(route, neighbor))
 
 def bit_count(bitfield: int) -> int:
     return bin(bitfield).count('1')
