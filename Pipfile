@@ -9,7 +9,9 @@ jupyter = "*"
 
 [packages]
 click = "*"
+matplotlib = "*"
 networkx = "*"
+numpy = "*"
 
 [requires]
 python_version = "3.6"

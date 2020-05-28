@@ -31,7 +31,7 @@ def figure2a_line_2_bgpsec_partial(
 ) -> List[Fraction]:
     graph = ASGraph(nx_graph, policy=RPKIPolicy())
     for asys in graph.identify_top_isps(deployment):
-        asys.policy = BGPsecLowSecPolicy()
+        asys.policy = BGPsecMedSecPolicy()
     return figure2a_experiment(graph, trials, n_hops=1)
 
 def figure2a_line_3_two_hop(nx_graph: nx.Graph, trials: List[Tuple[AS_ID, AS_ID]]) -> List[Fraction]:

@@ -74,7 +74,7 @@ class ASGraph(object):
                            if side == 'l'])
         return n_ancestors
 
-    def determine_reachability(self) -> Dict[AS_ID, int]:
+    def determine_reachability_all(self) -> Dict[AS_ID, int]:
         """Returns how many ASs can reach each AS, themselves included."""
         graph = self._build_reachability_graph()
 
