@@ -1,6 +1,7 @@
 import abc
 from fractions import Fraction
 import multiprocessing as mp
+import multiprocessing.synchronize as mpsync
 import networkx as nx
 import random
 import signal
@@ -92,8 +93,8 @@ def figure2a_experiment(
         trials: List[Tuple[AS_ID, AS_ID]],
         n_hops: int
 ) -> List[Fraction]:
-    trial_queue = mp.Queue()
-    result_queue = mp.Queue()
+    trial_queue: mp.Queue = mp.Queue()
+    result_queue: mp.Queue = mp.Queue()
     workers = [Figure2aExperiment(trial_queue, result_queue, graph, n_hops)
                for _ in range(PARALLELISM)]
 
@@ -131,7 +132,7 @@ def attacker_success_rate(graph: ASGraph, attacker: AS, victim: AS) -> Fraction:
 class Experiment(mp.Process, abc.ABC):
     input_queue: mp.Queue
     output_queue: mp.Queue
-    _stopped: mp.Event
+    _stopped: mpsync.Event
 
     def __init__(self, input_queue: mp.Queue, output_queue: mp.Queue):
         super().__init__(daemon=True)

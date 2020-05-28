@@ -4,6 +4,7 @@ import random
 
 import bgpsecsim.as_graph as as_graph
 import bgpsecsim.experiments as experiments
+import bgpsecsim.graphs as graphs
 import bgpsecsim.routing_policy as routing_policy
 from bgpsecsim.as_graph import ASGraph
 
@@ -84,27 +85,29 @@ def get_path_lengths(as_rel_file, target_asn):
 @click.option('-s', '--seed', type=int)
 @click.option('--trials', type=int, default=1)
 @click.argument('as-rel-file')
-def figure2a(seed, trials, as_rel_file):
+@click.argument('output-file')
+def figure2a(seed, trials, as_rel_file, output_file):
     if seed is not None:
         random.seed(seed)
 
     nx_graph = as_graph.parse_as_rel_file(as_rel_file)
     print("Loaded graph")
 
-    as_ids = list(nx_graph.nodes)
-    trials = [random.choices(as_ids, k=2) for _ in range(trials)]
+    graphs.figure2a(output_file, nx_graph, trials)
 
-    results = experiments.figure2a_line_1_next_as(nx_graph, 100, trials)
-    print("Next-AS: ", results)
+@cli.command()
+@click.option('-s', '--seed', type=int)
+@click.option('--trials', type=int, default=1)
+@click.argument('as-rel-file')
+@click.argument('output-file')
+def figure2b(seed, trials, as_rel_file, output_file):
+    if seed is not None:
+        random.seed(seed)
 
-    results = experiments.figure2a_line_2_bgpsec_partial(nx_graph, 100, trials)
-    print("BGPsec in partial deployment: ", results)
+    nx_graph = as_graph.parse_as_rel_file(as_rel_file)
+    print("Loaded graph")
 
-    results = experiments.figure2a_line_4_rpki(nx_graph, trials)
-    print("RPKI (full deployment): ", results)
-
-    results = experiments.figure2a_line_5_bgpsec_high_full(nx_graph, trials)
-    print("BGPsec (full deployment, legacy allowed): ", results)
+    graphs.figure2b(output_file, nx_graph, trials)
 
 if __name__ == '__main__':
     cli()

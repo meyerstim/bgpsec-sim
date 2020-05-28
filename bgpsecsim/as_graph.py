@@ -147,9 +147,9 @@ class ASGraph(object):
         # Find some valid route to the victim for the attacker to extend.
         base_route = None
         for asys in self.asyss.values():
-            route = asys.get_route(victim.as_id)
-            if route and route.length == n:
-                base_route = route
+            valid_route = asys.get_route(victim.as_id)
+            if valid_route and valid_route.length == n:
+                base_route = valid_route
                 break
 
         if base_route is None:
