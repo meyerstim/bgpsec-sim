@@ -10,7 +10,8 @@ from typing import List, Tuple
 from bgpsecsim.asys import AS, AS_ID
 from bgpsecsim.as_graph import ASGraph
 from bgpsecsim.routing_policy import (
-    RPKIPolicy, PathEndValidationPolicy, BGPsecHighSecPolicy, BGPsecMedSecPolicy, BGPsecLowSecPolicy
+    DefaultPolicy, RPKIPolicy, PathEndValidationPolicy,
+    BGPsecHighSecPolicy, BGPsecMedSecPolicy, BGPsecLowSecPolicy,
 )
 
 PARALLELISM = 8
@@ -117,6 +118,10 @@ def figure2a_experiment(
         worker.join()
 
     return results
+
+def figure4_k_hop(nx_graph: nx.Graph, trials: List[Tuple[AS_ID, AS_ID]], n_hops: int) -> List[Fraction]:
+    graph = ASGraph(nx_graph, policy=DefaultPolicy())
+    return figure2a_experiment(graph, trials, n_hops)
 
 def attacker_success_rate(graph: ASGraph, attacker: AS, victim: AS) -> Fraction:
     n_bad_routes = 0

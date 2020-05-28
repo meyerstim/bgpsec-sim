@@ -1,5 +1,6 @@
 from collections import deque
 import networkx as nx
+import random
 from typing import Dict, Generator, List, Optional, Tuple
 
 import bgpsecsim.error as error
@@ -141,24 +142,21 @@ class ASGraph(object):
                 routes.append(asys.forward_route(route, neighbor))
 
     def hijack_n_hops(self, victim: AS, attacker: AS, n: int) -> None:
-        if n < 1:
-            raise ValueError("number of hops must be at least 1")
-
-        # Find some valid route to the victim for the attacker to extend.
-        base_route = None
-        for asys in self.asyss.values():
-            valid_route = asys.get_route(victim.as_id)
-            if valid_route and valid_route.length == n:
-                base_route = valid_route
-                break
-
-        if base_route is None:
-            raise error.NoRouteError(f"No {n - 1}-hop routes to {victim.as_id}")
+        if n < 0:
+            raise ValueError("number of hops must be non-negative")
+        elif n == 0:
+            path = [attacker]
+        elif n == 1:
+            path = [victim, attacker]
+        else:
+            asyss = list(set(self.asyss.values()) - set([victim, attacker]))
+            middle = random.sample(asyss, n - 1)
+            path = [victim] + middle + [attacker]
 
         bad_route = Route(
-            base_route.path + [attacker],
-            origin_invalid=False,
-            path_end_invalid=n == 1,
+            path,
+            origin_invalid=n == 0,
+            path_end_invalid=n <= 1,
             authenticated=False
         )
 

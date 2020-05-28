@@ -60,7 +60,7 @@ def figure2(filename: str, nx_graph: nx.Graph, trials: List[Tuple[AS_ID, AS_ID]]
 
     line1_results = []
     for deployment in deployments:
-        print(f"Next-AS (deployment = {deployment})", deployment)
+        print(f"Next-AS (deployment = {deployment})")
         line1_results.append(fmean(experiments.figure2a_line_1_next_as(nx_graph, deployment, trials)))
     print("Next-AS: ", line1_results)
 
@@ -102,9 +102,33 @@ def figure3b(filename: str, nx_graph: nx.Graph, n_trials: int):
     trials = [(random.choice(large_asyss), random.choice(stub_asyss)) for _ in range(n_trials)]
     return figure2(filename, nx_graph, trials)
 
+def figure4(filename: str, nx_graph: nx.Graph, n_trials: int):
+    as_ids: List[AS_ID] = list(nx_graph.nodes)
+    trials = [random_pair(as_ids) for _ in range(n_trials)]
+
+    # TODO: Include 0-hop attack
+    hops = np.arange(0, 11)
+
+    line1_results = []
+    for n_hops in hops:
+        print(f"k-hop attacker (k={n_hops})")
+        line1_results.append(fmean(experiments.figure4_k_hop(nx_graph, trials, n_hops)))
+    print("k-hop attacker: ", line1_results)
+
+    line2_results = fmean(experiments.figure2a_line_5_bgpsec_med_full(nx_graph, trials))
+    print("BGPsec (full deployment, legacy allowed): ", line2_results)
+
+    plt.figure(figsize=(10, 5))
+    plt.plot(hops, line1_results, label="k-hop attacker")
+    plt.plot(hops, np.repeat(line2_results, 11), label="BGPsec (full deployment, legacy allowed)", linestyle="--")
+    plt.legend()
+    plt.xlabel("Hops")
+    plt.ylabel("Attacker's Success Rate")
+    plt.savefig(filename)
+
 def fmean(vals: Sequence[Fraction]) -> float:
     return float(statistics.mean(vals))
 
 def random_pair(as_ids: List[AS_ID]) -> Tuple[AS_ID, AS_ID]:
-    [asn1, asn2] = random.choices(as_ids, k=2)
+    [asn1, asn2] = random.sample(as_ids, 2)
     return (asn1, asn2)

@@ -84,30 +84,18 @@ def get_path_lengths(as_rel_file, target_asn):
 @cli.command()
 @click.option('-s', '--seed', type=int)
 @click.option('--trials', type=int, default=1)
+@click.argument('figure')
 @click.argument('as-rel-file')
 @click.argument('output-file')
-def figure2a(seed, trials, as_rel_file, output_file):
+def generate(seed, trials, figure, as_rel_file, output_file):
     if seed is not None:
         random.seed(seed)
 
     nx_graph = as_graph.parse_as_rel_file(as_rel_file)
     print("Loaded graph")
 
-    graphs.figure2a(output_file, nx_graph, trials)
-
-@cli.command()
-@click.option('-s', '--seed', type=int)
-@click.option('--trials', type=int, default=1)
-@click.argument('as-rel-file')
-@click.argument('output-file')
-def figure2b(seed, trials, as_rel_file, output_file):
-    if seed is not None:
-        random.seed(seed)
-
-    nx_graph = as_graph.parse_as_rel_file(as_rel_file)
-    print("Loaded graph")
-
-    graphs.figure2b(output_file, nx_graph, trials)
+    func = getattr(graphs, figure)
+    func(output_file, nx_graph, trials)
 
 if __name__ == '__main__':
     cli()
