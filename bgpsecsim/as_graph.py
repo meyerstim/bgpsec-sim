@@ -1,6 +1,6 @@
 from collections import deque
 import networkx as nx
-from typing import Dict, List, Optional, Tuple
+from typing import Dict, Generator, List, Optional, Tuple
 
 import bgpsecsim.error as error
 from bgpsecsim.asys import AS, AS_ID, Relation, Route, RoutingPolicy
@@ -174,3 +174,15 @@ class ASGraph(object):
 
 def bit_count(bitfield: int) -> int:
     return bin(bitfield).count('1')
+
+def asyss_by_customer_count(
+        graph: nx.Graph,
+        min_count: int,
+        max_count: Optional[int]
+) -> Generator[int, None, None]:
+    for node in graph:
+        customer_count = sum((1
+                             for neighbor in graph[node]
+                             if graph[node][neighbor]['customer'] == neighbor))
+        if min_count <= customer_count and (max_count is None or max_count >= customer_count):
+            yield node

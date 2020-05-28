@@ -8,6 +8,7 @@ import statistics
 from typing import List, Sequence, Tuple
 
 from bgpsecsim.asys import AS_ID
+import bgpsecsim.as_graph as as_graph
 from bgpsecsim.as_graph import ASGraph
 import bgpsecsim.experiments as experiments
 
@@ -79,15 +80,27 @@ def figure2(filename: str, nx_graph: nx.Graph, trials: List[Tuple[AS_ID, AS_ID]]
     print("BGPsec (full deployment, legacy allowed): ", line5_results)
 
     plt.figure(figsize=(10, 5))
-    plt.plot(deployment, line1_results, label="Next-AS")
-    plt.plot(deployment, line2_results, label="BGPsec in partial deployment")
-    plt.plot(deployment, np.repeat(line3_results, 11), label="2-hop")
-    plt.plot(deployment, np.repeat(line4_results, 11), label="RPKI (full deployment)", linestyle="--")
-    plt.plot(deployment, np.repeat(line5_results, 11), label="BGPsec (full deployment, legacy allowed)", linestyle="--")
+    plt.plot(deployments, line1_results, label="Next-AS")
+    plt.plot(deployments, line2_results, label="BGPsec in partial deployment")
+    plt.plot(deployments, np.repeat(line3_results, 11), label="2-hop")
+    plt.plot(deployments, np.repeat(line4_results, 11), label="RPKI (full deployment)", linestyle="--")
+    plt.plot(deployments, np.repeat(line5_results, 11), label="BGPsec (full deployment, legacy allowed)", linestyle="--")
     plt.legend()
     plt.xlabel("Deployment (top ISPs)")
     plt.ylabel("Attacker's Success Rate")
     plt.savefig(filename)
+
+def figure3a(filename: str, nx_graph: nx.Graph, n_trials: int):
+    large_asyss = list(as_graph.asyss_by_customer_count(nx_graph, 250, None))
+    stub_asyss = list(as_graph.asyss_by_customer_count(nx_graph, 0, 0))
+    trials = [(random.choice(stub_asyss), random.choice(large_asyss)) for _ in range(n_trials)]
+    return figure2(filename, nx_graph, trials)
+
+def figure3b(filename: str, nx_graph: nx.Graph, n_trials: int):
+    large_asyss = list(as_graph.asyss_by_customer_count(nx_graph, 250, None))
+    stub_asyss = list(as_graph.asyss_by_customer_count(nx_graph, 0, 0))
+    trials = [(random.choice(large_asyss), random.choice(stub_asyss)) for _ in range(n_trials)]
+    return figure2(filename, nx_graph, trials)
 
 def fmean(vals: Sequence[Fraction]) -> float:
     return float(statistics.mean(vals))
