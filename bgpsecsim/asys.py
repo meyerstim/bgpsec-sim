@@ -62,25 +62,24 @@ class AS(object):
         return self.routing_table.get(as_id, None)
 
     def force_route(self, route: 'Route') -> None:
-        self.routing_table[route.origin.as_id] = route
+        self.routing_table[route.dest] = route
 
     def learn_route(self, route: 'Route') -> List['AS']:
         """Learn about a new route.
 
         Returns a list of ASs to advertise route to.
         """
-        if route.origin == self:
+        if route.dest == self.as_id:
             return []
 
         if not self.policy.accept_route(route):
             return []
 
-        origin_id = route.origin.as_id
-        if (origin_id in self.routing_table and
-            not self.policy.prefer_route(self.routing_table[origin_id], route)):
+        if (route.dest in self.routing_table and
+            not self.policy.prefer_route(self.routing_table[route.dest], route)):
             return []
 
-        self.routing_table[origin_id] = route
+        self.routing_table[route.dest] = route
 
         forward_to_relations = set((relation
                                     for relation in Relation
@@ -92,6 +91,7 @@ class AS(object):
 
     def originate_route(self, next_hop: 'AS') -> 'Route':
         return Route(
+            dest=self.as_id,
             path=[self, next_hop],
             origin_invalid=False,
             path_end_invalid=False,
@@ -100,6 +100,7 @@ class AS(object):
 
     def forward_route(self, route: 'Route', next_hop: 'AS') -> 'Route':
         return Route(
+            dest=route.dest,
             path=route.path + [next_hop],
             origin_invalid=route.origin_invalid,
             path_end_invalid=route.path_end_invalid,
@@ -109,6 +110,7 @@ class AS(object):
     def reset_routing_table(self) -> None:
         self.routing_table.clear()
         self.routing_table[self.as_id] = Route(
+            self.as_id,
             [self],
             origin_invalid=False,
             path_end_invalid=False,
@@ -116,8 +118,11 @@ class AS(object):
         )
 
 class Route(object):
-    __slots__ = ['path', 'origin_invalid', 'path_end_invalid', 'authenticated']
+    __slots__ = ['dest', 'path', 'origin_invalid', 'path_end_invalid', 'authenticated']
 
+    # Destination is an IP block that is owned by this AS. The AS_ID is the same as the origin's ID
+    # for valid routes, but may differ in a hijacking attack.
+    dest: AS_ID
     path: List[AS]
     # Whether the origin has no valid RPKI record and one is expected.
     origin_invalid: bool
@@ -128,11 +133,13 @@ class Route(object):
 
     def __init__(
         self,
+        dest: AS_ID,
         path: List[AS],
         origin_invalid: bool,
         path_end_invalid: bool,
         authenticated: bool,
     ):
+        self.dest = dest
         self.path = path
         self.origin_invalid = origin_invalid
         self.path_end_invalid = path_end_invalid

@@ -154,6 +154,7 @@ class ASGraph(object):
             path = [victim] + middle + [attacker]
 
         bad_route = Route(
+            victim.as_id,
             path,
             origin_invalid=n == 0,
             path_end_invalid=n <= 1,
