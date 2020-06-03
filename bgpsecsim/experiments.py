@@ -153,6 +153,16 @@ def figure8_line_2_bgpsec_partial(
         results.extend(figure2a_experiment(graph, trials, n_hops=1))
     return results
 
+def figure9_line_1_rpki_partial(
+        nx_graph: nx.Graph,
+        deployment: int,
+        trials: List[Tuple[AS_ID, AS_ID]]
+) -> List[Fraction]:
+    graph = ASGraph(nx_graph, policy=DefaultPolicy())
+    for asys in graph.identify_top_isps(deployment):
+        asys.policy = RPKIPolicy()
+    return figure2a_experiment(graph, trials, n_hops=0)
+
 def attacker_success_rate(graph: ASGraph, attacker: AS, victim: AS) -> Fraction:
     n_bad_routes = 0
     n_total_routes = 0

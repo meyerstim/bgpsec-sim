@@ -1,5 +1,6 @@
 from fractions import Fraction
 import itertools
+import math
 import matplotlib.pyplot as plt
 import networkx as nx
 import numpy as np
@@ -12,21 +13,10 @@ import bgpsecsim.as_graph as as_graph
 from bgpsecsim.as_graph import ASGraph
 import bgpsecsim.experiments as experiments
 
-def figure2a(filename: str, nx_graph: nx.Graph, n_trials: int):
-    as_ids: List[AS_ID] = list(nx_graph.nodes)
-    trials = [random_pair(as_ids) for _ in range(n_trials)]
-    return figure2(filename, nx_graph, trials)
-
-def figure2b(filename: str, nx_graph: nx.Graph, n_trials: int):
-    """
-    This one is a little weird. The paper says "We evaluated, for each victim content provider, the
-    success rate of an attacker drawn uniformly at random." But the graph has only one line, so we
-    assume the success rate is averaged over them.
-    """
-
+def get_content_providers() -> List[AS_ID]:
     # This list was from 2013. Major content providers have likely changed.
     # TODO: Get updated list.
-    content_providers = [
+    return [
         15169, # Google
         22822, # Limelight
         20940, # Akamai
@@ -46,13 +36,31 @@ def figure2b(filename: str, nx_graph: nx.Graph, n_trials: int):
         38365, # Baidu
     ]
 
+def target_content_provider_trials(nx_graph: nx.Graph, n_trials: int) -> List[Tuple[AS_ID, AS_ID]]:
+    content_providers = get_content_providers()
     content_providers_set = set(content_providers)
     asyss_set = set(nx_graph.nodes)
     assert content_providers_set <= asyss_set
 
     as_ids: List[AS_ID] = list(asyss_set - content_providers_set)
-    attackers = random.choices(as_ids, k=n_trials // len(content_providers))
-    trials = list(itertools.product(content_providers, attackers))
+    attackers = random.choices(as_ids, k=math.ceil(n_trials / len(content_providers)))
+    return list(itertools.product(content_providers, attackers))
+
+def uniform_random_trials(nx_graph: nx.Graph, n_trials: int) -> List[Tuple[AS_ID, AS_ID]]:
+    as_ids: List[AS_ID] = list(nx_graph.nodes)
+    return [random_pair(as_ids) for _ in range(n_trials)]
+
+def figure2a(filename: str, nx_graph: nx.Graph, n_trials: int):
+    trials = uniform_random_trials(nx_graph, n_trials)
+    return figure2(filename, nx_graph, trials)
+
+def figure2b(filename: str, nx_graph: nx.Graph, n_trials: int):
+    """
+    This one is a little weird. The paper says "We evaluated, for each victim content provider, the
+    success rate of an attacker drawn uniformly at random." But the graph has only one line, so we
+    assume the success rate is averaged over them.
+    """
+    trials = target_content_provider_trials(nx_graph, n_trials)
     return figure2(filename, nx_graph, trials)
 
 def figure2(filename: str, nx_graph: nx.Graph, trials: List[Tuple[AS_ID, AS_ID]]):
@@ -103,8 +111,7 @@ def figure3b(filename: str, nx_graph: nx.Graph, n_trials: int):
     return figure2(filename, nx_graph, trials)
 
 def figure4(filename: str, nx_graph: nx.Graph, n_trials: int):
-    as_ids: List[AS_ID] = list(nx_graph.nodes)
-    trials = [random_pair(as_ids) for _ in range(n_trials)]
+    trials = uniform_random_trials(nx_graph, n_trials)
 
     hops = np.arange(0, 11)
 
@@ -126,9 +133,7 @@ def figure4(filename: str, nx_graph: nx.Graph, n_trials: int):
     plt.savefig(filename)
 
 def figure8(filename: str, nx_graph: nx.Graph, n_trials: int, p: float):
-    as_ids: List[AS_ID] = list(nx_graph.nodes)
-    trials = [random_pair(as_ids) for _ in range(n_trials)]
-
+    trials = uniform_random_trials(nx_graph, n_trials)
     deployments = np.arange(0, 110, 10)
 
     rand_state = random.getstate()
@@ -163,7 +168,7 @@ def figure8(filename: str, nx_graph: nx.Graph, n_trials: int, p: float):
     plt.plot(deployments, np.repeat(line4_results, 11), label="RPKI (full deployment)", linestyle="--")
     plt.plot(deployments, np.repeat(line5_results, 11), label="BGPsec (full deployment, legacy allowed)", linestyle="--")
     plt.legend()
-    plt.xlabel("Deployment (top ISPs)")
+    plt.xlabel("Expected Deployment (top ISPs)")
     plt.ylabel("Attacker's Success Rate")
     plt.savefig(filename)
 
@@ -175,6 +180,34 @@ def figure8b(filename: str, nx_graph: nx.Graph, n_trials: int):
 
 def figure8c(filename: str, nx_graph: nx.Graph, n_trials: int):
     figure8(filename, nx_graph, n_trials, p=0.25)
+
+def figure9a(filename: str, nx_graph: nx.Graph, n_trials: int):
+    trials = uniform_random_trials(nx_graph, n_trials)
+    return figure9(filename, nx_graph, trials)
+
+def figure9b(filename: str, nx_graph: nx.Graph, n_trials: int):
+    trials = target_content_provider_trials(nx_graph, n_trials)
+    return figure9(filename, nx_graph, trials)
+
+def figure9(filename: str, nx_graph: nx.Graph, trials: List[Tuple[AS_ID, AS_ID]]):
+    deployments = np.arange(0, 110, 10)
+
+    line1_results = []
+    for deployment in deployments:
+        print(f"Prefix hijack (deployment = {deployment})")
+        line1_results.append(fmean(experiments.figure9_line_1_rpki_partial(nx_graph, deployment, trials)))
+    print("Prefix hijack: ", line1_results)
+
+    line2_results = fmean(experiments.figure2a_line_4_rpki(nx_graph, trials))
+    print("RPKI (full deployment): ", line2_results)
+
+    plt.figure(figsize=(10, 5))
+    plt.plot(deployments, line1_results, label="Prefix hijack")
+    plt.plot(deployments, np.repeat(line2_results, 11), label="RPKI (full deployment)", linestyle="--")
+    plt.legend()
+    plt.xlabel("Deployment (top ISPs)")
+    plt.ylabel("Attacker's Success Rate")
+    plt.savefig(filename)
 
 def fmean(vals: Sequence[Fraction]) -> float:
     return float(statistics.mean(vals))
