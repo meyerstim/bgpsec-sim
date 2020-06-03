@@ -106,7 +106,6 @@ def figure4(filename: str, nx_graph: nx.Graph, n_trials: int):
     as_ids: List[AS_ID] = list(nx_graph.nodes)
     trials = [random_pair(as_ids) for _ in range(n_trials)]
 
-    # TODO: Include 0-hop attack
     hops = np.arange(0, 11)
 
     line1_results = []
@@ -125,6 +124,57 @@ def figure4(filename: str, nx_graph: nx.Graph, n_trials: int):
     plt.xlabel("Hops")
     plt.ylabel("Attacker's Success Rate")
     plt.savefig(filename)
+
+def figure8(filename: str, nx_graph: nx.Graph, n_trials: int, p: float):
+    as_ids: List[AS_ID] = list(nx_graph.nodes)
+    trials = [random_pair(as_ids) for _ in range(n_trials)]
+
+    deployments = np.arange(0, 110, 10)
+
+    rand_state = random.getstate()
+
+    line1_results = []
+    for deployment in deployments:
+        print(f"Next-AS (deployment = {deployment})")
+        random.setstate(rand_state)
+        line1_results.append(fmean(experiments.figure8_line_1_next_as(nx_graph, deployment, p, trials)))
+    print("Next-AS: ", line1_results)
+
+    line2_results = []
+    for deployment in deployments:
+        print(f"BGPsec in partial deployment (deployment = {deployment})")
+        random.setstate(rand_state)
+        line2_results.append(fmean(experiments.figure8_line_2_bgpsec_partial(nx_graph, deployment, p, trials)))
+    print("BGPsec in partial deployment: ", line2_results)
+
+    line3_results = fmean(experiments.figure2a_line_3_two_hop(nx_graph, trials))
+    print("2-hop: ", line3_results)
+
+    line4_results = fmean(experiments.figure2a_line_4_rpki(nx_graph, trials))
+    print("RPKI (full deployment): ", line4_results)
+
+    line5_results = fmean(experiments.figure2a_line_5_bgpsec_med_full(nx_graph, trials))
+    print("BGPsec (full deployment, legacy allowed): ", line5_results)
+
+    plt.figure(figsize=(10, 5))
+    plt.plot(deployments, line1_results, label="Next-AS")
+    plt.plot(deployments, line2_results, label="BGPsec in partial deployment")
+    plt.plot(deployments, np.repeat(line3_results, 11), label="2-hop")
+    plt.plot(deployments, np.repeat(line4_results, 11), label="RPKI (full deployment)", linestyle="--")
+    plt.plot(deployments, np.repeat(line5_results, 11), label="BGPsec (full deployment, legacy allowed)", linestyle="--")
+    plt.legend()
+    plt.xlabel("Deployment (top ISPs)")
+    plt.ylabel("Attacker's Success Rate")
+    plt.savefig(filename)
+
+def figure8a(filename: str, nx_graph: nx.Graph, n_trials: int):
+    figure8(filename, nx_graph, n_trials, p=0.75)
+
+def figure8b(filename: str, nx_graph: nx.Graph, n_trials: int):
+    figure8(filename, nx_graph, n_trials, p=0.50)
+
+def figure8c(filename: str, nx_graph: nx.Graph, n_trials: int):
+    figure8(filename, nx_graph, n_trials, p=0.25)
 
 def fmean(vals: Sequence[Fraction]) -> float:
     return float(statistics.mean(vals))

@@ -123,6 +123,36 @@ def figure4_k_hop(nx_graph: nx.Graph, trials: List[Tuple[AS_ID, AS_ID]], n_hops:
     graph = ASGraph(nx_graph, policy=DefaultPolicy())
     return figure2a_experiment(graph, trials, n_hops)
 
+def figure8_line_1_next_as(
+        nx_graph: nx.Graph,
+        deployment: int,
+        p: float,
+        trials: List[Tuple[AS_ID, AS_ID]]
+) -> List[Fraction]:
+    results = []
+    for _ in range(20):
+        graph = ASGraph(nx_graph, policy=RPKIPolicy())
+        for asys in graph.identify_top_isps(int(deployment / p)):
+            if random.random() < p:
+                asys.policy = PathEndValidationPolicy()
+        results.extend(figure2a_experiment(graph, trials, n_hops=1))
+    return results
+
+def figure8_line_2_bgpsec_partial(
+        nx_graph: nx.Graph,
+        deployment: int,
+        p: float,
+        trials: List[Tuple[AS_ID, AS_ID]]
+) -> List[Fraction]:
+    results = []
+    for _ in range(20):
+        graph = ASGraph(nx_graph, policy=RPKIPolicy())
+        for asys in graph.identify_top_isps(int(deployment / p)):
+            if random.random() < p:
+                asys.policy = BGPsecMedSecPolicy()
+        results.extend(figure2a_experiment(graph, trials, n_hops=1))
+    return results
+
 def attacker_success_rate(graph: ASGraph, attacker: AS, victim: AS) -> Fraction:
     n_bad_routes = 0
     n_total_routes = 0
