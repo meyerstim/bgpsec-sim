@@ -36,15 +36,25 @@ def get_content_providers() -> List[AS_ID]:
         38365, # Baidu
     ]
 
-def target_content_provider_trials(nx_graph: nx.Graph, n_trials: int) -> List[Tuple[AS_ID, AS_ID]]:
-    content_providers = get_content_providers()
-    content_providers_set = set(content_providers)
+def get_current_content_providers() -> List[AS_ID]:
+    return [
+        20940, # Akamai
+        16509, # Amazon
+        714,   # Apple
+        32934, # Facebook
+        15169, # Google
+        8075,  # Microsoft
+        2906   # Netflix
+    ]
+
+def target_content_provider_trials(nx_graph: nx.Graph, n_trials: int, providers: List[AS_ID]) -> List[Tuple[AS_ID, AS_ID]]:
+    content_providers_set = set(providers)
     asyss_set = set(nx_graph.nodes)
     assert content_providers_set <= asyss_set
 
     as_ids: List[AS_ID] = list(asyss_set - content_providers_set)
-    attackers = random.choices(as_ids, k=math.ceil(n_trials / len(content_providers)))
-    return list(itertools.product(content_providers, attackers))
+    attackers = random.choices(as_ids, k=math.ceil(n_trials / len(providers)))
+    return list(itertools.product(providers, attackers))
 
 def uniform_random_trials(nx_graph: nx.Graph, n_trials: int) -> List[Tuple[AS_ID, AS_ID]]:
     as_ids: List[AS_ID] = list(nx_graph.nodes)
@@ -186,7 +196,11 @@ def figure9a(filename: str, nx_graph: nx.Graph, n_trials: int):
     return figure9(filename, nx_graph, trials)
 
 def figure9b(filename: str, nx_graph: nx.Graph, n_trials: int):
-    trials = target_content_provider_trials(nx_graph, n_trials)
+    trials = target_content_provider_trials(nx_graph, n_trials, get_content_providers())
+    return figure9(filename, nx_graph, trials)
+   
+def figure9b_update(filename: str, nx_graph: nx.Graph, n_trials: int):
+    trials = target_content_provider_trials(nx_graph, n_trials, get_current_content_providers())
     return figure9(filename, nx_graph, trials)
 
 def figure9(filename: str, nx_graph: nx.Graph, trials: List[Tuple[AS_ID, AS_ID]]):

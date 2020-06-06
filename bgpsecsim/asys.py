@@ -45,7 +45,10 @@ class AS(object):
         for relation in self.neighbors.values():
             counts[relation] += 1
         return counts
-
+        
+    def get_providers(self) -> List[AS_ID]:
+        return filter(lambda id: self.neighbors[id] == Relation.PROVIDER, self.neighbors.keys())
+        
     def add_peer(self, asys: 'AS') -> None:
         self.neighbors[asys] = Relation.PEER
 
