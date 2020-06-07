@@ -1,7 +1,8 @@
 # Writeups: https://www.bgpmon.net/turkey-hijacking-ip-addresses-for-popular-global-dns-providers/
-# Dataset: 	(Implied from writeups)
-# Date:		March 23 2014
+# Dataset: 	https://stat.ripe.net/data/bgp-updates/data.json?resource=as9121&starttime=2014-03-29T8:30&endtime=2014-03-29T10:30
+# Date:		March 29 2014
 # Notes: 	Victims are ASes for 8.8.8.8, 208.67.222.222 (OpenDNS), and 4.4.2.2 (a Level3 Resolver). Some press implies that other resolvers/ASes were affected, but I couldn't find any other specific IPs. Turk Telecom was not the only Turkish ISP to attempt to block access to Twitter at this time, but seems to be the only actual BGP attacker.
+# Mismatch:	RIPE, the RIR for Turkey, does not have a Remote Route Collector in Turkey, and my script returns only 10 apparent false positives. I actually can't find an advertisement of 8.8.8.8 comign from Turk Telecom at all
 # Attackers:
 9121
 

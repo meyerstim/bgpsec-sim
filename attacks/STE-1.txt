@@ -3,6 +3,7 @@
 # Dataset:	https://stat.ripe.net/data/bgp-updates/data.json?resource=AS29386&starttime=2014-12-09T08:36&endtime=2014-12-09T09:00
 # Date:		December 9 2014
 # Notes: 	Attackers were customers of AS3491 (PCCW Global), AS3320 (Deutsche Telekom AG) and AS6762 (Telecom Italia Sparkle). Only the last of these actually announced the malicious routes. Make sure to include STE-2 as well.
+# Mismatch:	Between this and STE-2, we find 1580 affected prefixes, rather than the 1481 reported by BGPmon.
 # Attackers:
 29386
 

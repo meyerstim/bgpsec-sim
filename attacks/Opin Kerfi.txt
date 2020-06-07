@@ -1,9 +1,14 @@
 # Writeups: https://dyn.com/blog/mitm-internet-hijacking/, https://petsymposium.org/2014/papers/Arnbak.pdf
-# Dataset: 	(Implied from writeups)
+# Dataset: 	https://stat.ripe.net/data/bgp-updates/data.json?resource=as48685&starttime=2013-07-31T07:00&endtime=2013-07-31T09:00
 # Date:		July 31 2013
 # Notes: 	Attacker was AS48685, which has two providers, 12969 and 6677. Only 6677 propagated the malicious routes. Victim ASes are implied from reported hijacked IP prefixes.
+# Mismatch:	We find 598 affected prefixes, rather than the 597 reported by Dyn. We do not find AS209 (CenturyLink-Qwest), which we know was the main victim.
 # Attackers:
 48685
 
 # Victims:
-22561
+3257
+11696
+17184
+18566
+48685
