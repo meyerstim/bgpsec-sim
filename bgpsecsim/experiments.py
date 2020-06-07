@@ -5,6 +5,7 @@ import multiprocessing.synchronize as mpsync
 import networkx as nx
 import random
 import signal
+import warnings
 from typing import List, Tuple
 
 from bgpsecsim.asys import AS, AS_ID
@@ -14,7 +15,7 @@ from bgpsecsim.routing_policy import (
     BGPsecHighSecPolicy, BGPsecMedSecPolicy, BGPsecLowSecPolicy,
 )
 
-PARALLELISM = 8
+PARALLELISM = 1
 
 def figure2a_line_1_next_as(
         nx_graph: nx.Graph,
@@ -123,6 +124,26 @@ def figure4_k_hop(nx_graph: nx.Graph, trials: List[Tuple[AS_ID, AS_ID]], n_hops:
     graph = ASGraph(nx_graph, policy=DefaultPolicy())
     return figure2a_experiment(graph, trials, n_hops)
 
+def figure7a(
+        nx_graph: nx.Graph,
+        deployment: int,
+        trials: List[Tuple[AS_ID, AS_ID]]
+) -> List[Fraction]:
+    graph = ASGraph(nx_graph, policy=RPKIPolicy())
+    for asys in graph.identify_top_isps(deployment):
+        asys.policy = PathEndValidationPolicy()
+    return figure2a_experiment(graph, trials, n_hops=1)
+
+def figure7b(
+        nx_graph: nx.Graph,
+        deployment: int,
+        trials: List[Tuple[AS_ID, AS_ID]]
+) -> List[Fraction]:
+    graph = ASGraph(nx_graph, policy=RPKIPolicy())
+    for asys in graph.identify_top_isps(deployment):
+        asys.policy = BGPsecMedSecPolicy()
+    return figure2a_experiment(graph, trials, n_hops=1)
+
 def figure8_line_1_next_as(
         nx_graph: nx.Graph,
         deployment: int,
@@ -220,15 +241,18 @@ class Figure2aExperiment(Experiment):
 
         victim = graph.get_asys(victim_id)
         if victim is None:
-            raise ValueError(f"No AS with ID {victim_id}")
+            warnings.warn(f"No AS with ID {victim_id}")
+            return Fraction(0, 1)
+
         attacker = graph.get_asys(attacker_id)
         if attacker is None:
-            raise ValueError(f"No AS with ID {attacker_id}")
+            warnings.warn(f"No AS with ID {attacker_id}")
+            return Fraction(0, 1)
 
         graph.clear_routing_tables()
         graph.find_routes_to(victim)
         graph.hijack_n_hops(victim, attacker, n_hops)
-
+        
         result = attacker_success_rate(graph, attacker, victim)
 
         return result

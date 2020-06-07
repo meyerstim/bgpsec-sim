@@ -6,7 +6,6 @@
 # Mismatch:	Between this and STE-2, we find 1580 affected prefixes, rather than the 1481 reported by BGPmon.
 # Attackers:
 29256
-
 # Victims:
 6453
 29256

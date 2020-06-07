@@ -1,10 +1,9 @@
 # Writeups: https://www.bgpmon.net/hijack-by-as4761-indosat-a-quick-report/
 # Dataset: 	https://web.archive.org/web/20110119001222if_/http://www.bgpmon.net:80/AS4761-Jan14-2010.txt
-# Date:		Jan 14 2010
+# Date:		Jan 14 2011
 # Notes: 	Removed AS4761, the attacker, from victims list.
 # Attackers:
 4761
-
 # Victims:
 80 
 109 
@@ -828,4 +827,4 @@
 55586 
 55666 
 55675 
-55794 
+55794

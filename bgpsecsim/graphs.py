@@ -13,6 +13,17 @@ import bgpsecsim.as_graph as as_graph
 from bgpsecsim.as_graph import ASGraph
 import bgpsecsim.experiments as experiments
 
+def get_attacks():
+    return [
+        ("Syria Telecom attacks Youtube-1", "attacks/STE-1.txt", "caida-data/20141201.as-rel.txt"),
+        ("Syria Telecom attacks Youtube-2", "attacks/STE-2.txt", "caida-data/20141201.as-rel.txt"),
+        ("Indosat attacks various ASes", "attacks/Indosat.txt", "caida-data/20110101.as-rel.txt"),
+        # Turk Telecom was in 3/2014, but 12/2013 is as close as CAIDA has, for some reason
+        ("Turk Telecom attacks DNS servers", "attacks/Turk Telecom.txt", "caida-data/20131201.as-rel.txt"),
+        ("Opin Kerfi attacks CenturyTel", "attacks/Opin Kerfi.txt", "caida-data/20130701.as-rel.txt")
+    ]
+
+
 def get_content_providers() -> List[AS_ID]:
     # This list was from 2013. Major content providers have likely changed.
     # TODO: Get updated list.
@@ -139,6 +150,82 @@ def figure4(filename: str, nx_graph: nx.Graph, n_trials: int):
     plt.plot(hops, np.repeat(line2_results, 11), label="BGPsec (full deployment, legacy allowed)", linestyle="--")
     plt.legend()
     plt.xlabel("Hops")
+    plt.ylabel("Attacker's Success Rate")
+    plt.savefig(filename)
+
+def figure7a(filename: str, nx_graph: nx.Graph, n_trials: int):
+    results = []
+    attacks = get_attacks()
+
+    for (label, filepath, as_rel_file) in attacks:
+        nx_graph = as_graph.parse_as_rel_file(as_rel_file)
+        print("Loaded graph for ", label)
+
+        with open(filepath) as f:
+            attackers = None
+            targets = []
+            # Expects 1 attacker, n victims, comments beginning with #
+            for l in f:
+                if l[0] == '#':
+                    continue
+                if attackers == None:
+                    attackers = [int(l)]
+                    continue
+                targets.append(int(l))
+
+        trials = list(itertools.product(targets, attackers))
+
+        deployments = np.arange(0, 110, 10)
+
+        attack_results = []
+        for deployment in deployments:
+            attack_results.append(fmean(experiments.figure7a(nx_graph, deployment, trials)))
+        results.append(attack_results)
+        print(label, attack_results)
+        
+    plt.figure(figsize=(10, 5))
+    for i in range(len(results)):
+        plt.plot(deployments, results[i], label=attacks[i][0])
+    plt.legend()
+    plt.xlabel("Deployment (top ISPs)")
+    plt.ylabel("Attacker's Success Rate")
+    plt.savefig(filename)
+
+def figure7b(filename: str, nx_graph: nx.Graph, n_trials: int):
+    results = []
+    attacks = get_attacks()
+
+    for (label, filepath, as_rel_file) in attacks:
+        nx_graph = as_graph.parse_as_rel_file(as_rel_file)
+        print("Loaded graph for ", label)
+
+        with open(filepath) as f:
+            attackers = None
+            targets = []
+            # Expects 1 attacker, n victims, comments beginning with #
+            for l in f:
+                if l[0] == '#':
+                    continue
+                if attackers == None:
+                    attackers = [int(l)]
+                    continue
+                targets.append(int(l))
+
+        trials = list(itertools.product(targets, attackers))
+
+        deployments = np.arange(0, 110, 10)
+
+        attack_results = []
+        for deployment in deployments:
+            attack_results.append(fmean(experiments.figure7b(nx_graph, deployment, trials)))
+        results.append(attack_results)
+        print(label, attack_results)
+        
+    plt.figure(figsize=(10, 5))
+    for i in range(len(results)):
+        plt.plot(deployments, results[i], label=attacks[i][0])
+    plt.legend()
+    plt.xlabel("Deployment (top ISPs)")
     plt.ylabel("Attacker's Success Rate")
     plt.savefig(filename)
 

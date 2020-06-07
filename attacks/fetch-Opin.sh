@@ -3,6 +3,7 @@ echo "Fetching announcement history from RIPE"
 wget -O as48685.json 'https://stat.ripe.net/data/bgp-updates/data.json?resource=as48685&starttime=2013-07-31T07:00&endtime=2013-07-31T09:00'
 
 jq ".data.updates[].attrs.target_prefix" < as48685.json | sed s/\"//g | sort -n | uniq > /tmp/as48685-updated-prefixes.txt
+
 echo "Fetching all prefixes announced in the prior month"
 wget -O as48685-legitimate-prefixes.json 'https://stat.ripe.net/data/announced-prefixes/data.json?resource=as48685&starttime=2013-06-30T08:00&endtime=2013-07-31T07:00'
 

@@ -5,7 +5,6 @@
 # Mismatch:	We find 598 affected prefixes, rather than the 597 reported by Dyn. We do not find AS209 (CenturyLink-Qwest), which we know was the main victim.
 # Attackers:
 48685
-
 # Victims:
 3257
 11696
