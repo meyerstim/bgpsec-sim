@@ -1,0 +1,9 @@
+# Writeups: https://dyn.com/blog/mitm-internet-hijacking/, https://petsymposium.org/2014/papers/Arnbak.pdf
+# Dataset: 	(Implied from writeups)
+# Date:		July 31 2013
+# Notes: 	Attacker was AS48685, which has two providers, 12969 and 6677. Only 6677 propagated the malicious routes. Victim ASes are implied from reported hijacked IP prefixes.
+# Attackers:
+48685
+
+# Victims:
+22561

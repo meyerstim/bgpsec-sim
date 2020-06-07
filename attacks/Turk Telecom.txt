@@ -1,0 +1,11 @@
+# Writeups: https://www.bgpmon.net/turkey-hijacking-ip-addresses-for-popular-global-dns-providers/
+# Dataset: 	(Implied from writeups)
+# Date:		March 23 2014
+# Notes: 	Victims are ASes for 8.8.8.8, 208.67.222.222 (OpenDNS), and 4.4.2.2 (a Level3 Resolver). Some press implies that other resolvers/ASes were affected, but I couldn't find any other specific IPs. Turk Telecom was not the only Turkish ISP to attempt to block access to Twitter at this time, but seems to be the only actual BGP attacker.
+# Attackers:
+9121
+
+# Victims:
+15169
+36692
+3356

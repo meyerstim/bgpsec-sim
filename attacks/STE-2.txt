@@ -1,0 +1,12 @@
+# Writeups: https://bgpmon.net/bgp-hijack-incident-by-syrian-telecommunications-establishment/
+# Dataset: 	https://stat.ripe.net/data/bgp-updates/data.json?resource=AS29386&starttime=2014-12-09T08:36&endtime=2014-12-09T09:00
+# Dataset:	https://stat.ripe.net/data/bgp-updates/data.json?resource=AS29386&starttime=2014-12-09T08:36&endtime=2014-12-09T09:00
+# Date:		December 9 2014
+# Notes: 	Attackers were customers of AS3491 (PCCW Global), AS3320 (Deutsche Telekom AG) and AS6762 (Telecom Italia Sparkle). Only the last of these actually announced the malicious routes. Make sure to include STE-1 as well. Removed 29256, the attacker, from the victims list.
+# Attackers:
+29256
+
+# Victims:
+6453
+29256
+139729
