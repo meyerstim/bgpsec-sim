@@ -70,7 +70,7 @@ def figure2b(filename: str, nx_graph: nx.Graph, n_trials: int):
     success rate of an attacker drawn uniformly at random." But the graph has only one line, so we
     assume the success rate is averaged over them.
     """
-    trials = target_content_provider_trials(nx_graph, n_trials)
+    trials = target_content_provider_trials(nx_graph, n_trials, get_content_providers())
     return figure2(filename, nx_graph, trials)
 
 def figure2(filename: str, nx_graph: nx.Graph, trials: List[Tuple[AS_ID, AS_ID]]):

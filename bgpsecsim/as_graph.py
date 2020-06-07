@@ -71,9 +71,9 @@ class ASGraph(object):
         """Return providers of a list of ASes, as a set"""
         providers = set([])
         for as_id in ids:
-            for p in self.asyss[as_id].get_providers():
-                providers.add(p.as_id)
-        return providers
+            for p_id in self.asyss[as_id].get_providers():
+                providers.add(p_id)
+        return list(providers)
 
     def determine_reachability_one(self, as_id: AS_ID) -> int:
         """Returns how many ASs can the given AS, itself included."""
