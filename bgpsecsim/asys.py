@@ -10,12 +10,14 @@ class Relation(Enum):
     PROVIDER = 3
 
 class AS(object):
+    #__slots__ states which instance attributes you expect your object instances to have -> results in faster access
     __slots__ = [
         'as_id', 'neighbors', 'policy', 'publishes_rpki', 'publishes_path_end', 'bgp_sec_enabled',
         'routing_table'
     ]
 
     as_id: AS_ID
+    #Dict stores key:value pairs -> RELATION is connected with the given AS (e.g. Dict['123', 1] states that AS 123 is a CUSTOMER of the current AS
     neighbors: Dict['AS', Relation]
     policy: 'RoutingPolicy'
     publishes_rpki: bool
@@ -24,6 +26,7 @@ class AS(object):
     routing_table: Dict[AS_ID, 'Route']
 
     def __init__(
+    #self represents the instance of the class
         self,
         as_id: AS_ID,
         policy: 'RoutingPolicy',
@@ -40,13 +43,17 @@ class AS(object):
         self.routing_table = {}
         self.reset_routing_table()
 
+    #-> marks return function annotation. So tells which type the function should return, but does not force it.
+    
     def neighbor_counts_by_relation(self) -> Dict[Relation, int]:
+    #counts number of neoghbours of the current AS
         counts = { relation: 0 for relation in Relation }
         for relation in self.neighbors.values():
             counts[relation] += 1
         return counts
         
     def get_providers(self) -> List[AS_ID]:
+    #returns a list of all providers of the current AS
         providers = filter(lambda id: self.neighbors[id] == Relation.PROVIDER, self.neighbors.keys())
         return [p.as_id for p in providers]
         
@@ -149,6 +156,7 @@ class Route(object):
         self.path_end_invalid = path_end_invalid
         self.authenticated = authenticated
 
+#@property is pyhton way to create getter and setter method
     @property
     def length(self) -> int:
         return len(self.path)
@@ -168,9 +176,12 @@ class Route(object):
     def contains_cycle(self) -> bool:
         return len(self.path) != len(set(self.path))
 
+    #__str__ returns the string representation of the object
     def __str__(self) -> str:
         return ','.join((str(asys.as_id) for asys in self.path))
 
+    #__repr__ returns the object representation in string format.
+    #str should return humand readable String whereas repr returns object to work in with python
     def __repr__(self) -> str:
         s = str(self)
         flags = []
