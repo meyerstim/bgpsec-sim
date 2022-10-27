@@ -8,9 +8,11 @@ from bgpsecsim.asys import AS, AS_ID, Relation, Route, RoutingPolicy
 from bgpsecsim.routing_policy import DefaultPolicy
 
 def parse_as_rel_file(filename: str) -> nx.Graph:
+    #with is used to work with resources, here open a file stream; code is cleaner no file.close() afterwards is required
     with open(filename, 'r') as f:
         graph = nx.Graph()
 
+        #reads out the data stored in file "f" line by line
         for line in f:
             # Ignore lines starting with #
             if line.startswith('#'):
@@ -20,6 +22,7 @@ def parse_as_rel_file(filename: str) -> nx.Graph:
             # <provider-as>|<customer-as>|-1
             # <peer-as>|<peer-as>|0
             items = line.split('|')
+            #item does not have all the required information, so error is thrown for this line
             if len(items) != 3:
                 raise error.InvalidASRelFile(filename, f"bad line: {line}")
 
@@ -43,6 +46,7 @@ class ASGraph(object):
         self.asyss = {}
         for as_id in graph.nodes:
             self.asyss[as_id] = AS(as_id, policy)
+        #Looks for all edges in the before created graph; evaluates them which type of relation is there and adds the information to each AS
         for (as_id1, as_id2) in graph.edges:
             as1 = self.asyss[as_id1]
             as2 = self.asyss[as_id2]
@@ -60,6 +64,7 @@ class ASGraph(object):
     def get_asys(self, as_id: AS_ID) -> Optional[AS]:
         return self.asyss.get(as_id, None)
 
+    #ISP is no customer of any other AS
     def identify_top_isps(self, n: int) -> List[AS]:
         """Top ISPs by customer degree."""
         isps = [(asys, asys.neighbor_counts_by_relation())
@@ -89,15 +94,19 @@ class ASGraph(object):
 
         # Process nodes in topological order, keeping track of which ones they are reachable from
         # with a bitfield.
+        
+        #Queue are like stack but with the FIFO Principle; whereas deque works with LIFO
         queue: deque = deque()
         remaining_edges = {}
         for node in graph:
+            #in_degree is the number of edges pointing to the node
             remaining_edges[node] = graph.in_degree(node)
             if remaining_edges[node] == 0:
                 del remaining_edges[node]
                 queue.append(node)
         while queue:
             node = queue.popleft()
+            #A successor of n is a node m such that there exists a directed edge from n to m.
             for next_node in graph.successors(node):
                 graph.nodes[next_node]['reachable_from'] |= graph.nodes[node]['reachable_from']
                 remaining_edges[next_node] -= 1
@@ -152,13 +161,20 @@ class ASGraph(object):
     def hijack_n_hops(self, victim: AS, attacker: AS, n: int) -> None:
         if n < 0:
             raise ValueError("number of hops must be non-negative")
+        #If 0 hops then path is only the attacker itself
         elif n == 0:
             path = [attacker]
+        #If 1 hop then path is only attacker and victim AS
         elif n == 1:
             path = [victim, attacker]
+        #In other cases if 2 or more hops
         else:
+            #set is a list with only unique elements, so everythin double will be removed from it
+            #set1-set2 gives all the elements which are only uniquely in set1 and do not occur in set2
             asyss = list(set(self.asyss.values()) - set([victim, attacker]))
+            #random.sample returns n-1 random items of asyss
             middle = random.sample(asyss, n - 1)
+            #middle is added as new path from victom to attacker; where middle are AS choosen randomly from asyss; number of choosen is one lower than the number of hops given by n
             path = [victim] + middle + [attacker]
 
         bad_route = Route(
@@ -180,13 +196,17 @@ class ASGraph(object):
                 routes.append(asys.forward_route(route, neighbor))
 
 def bit_count(bitfield: int) -> int:
+    #.count returns the number of times the value "1" appears
+    #bin returns the binary version of a number
     return bin(bitfield).count('1')
 
 def asyss_by_customer_count(
         graph: nx.Graph,
         min_count: int,
+        #Optional returns only values of the desired type, in this case "int"; otherwise NONE will be returned
         max_count: Optional[int]
 ) -> Generator[int, None, None]:
+#Generator[yield_type, send_type, return_type]
     for node in graph:
         customer_count = sum((1
                              for neighbor in graph[node]

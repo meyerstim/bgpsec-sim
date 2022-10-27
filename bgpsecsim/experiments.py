@@ -184,6 +184,7 @@ def figure9_line_1_rpki_partial(
         asys.policy = RPKIPolicy()
     return figure2a_experiment(graph, trials, n_hops=0)
 
+#Result is a fraction, shows the ratio of successfull attacks to not attacked routes
 def attacker_success_rate(graph: ASGraph, attacker: AS, victim: AS) -> Fraction:
     n_bad_routes = 0
     n_total_routes = 0
@@ -193,6 +194,7 @@ def attacker_success_rate(graph: ASGraph, attacker: AS, victim: AS) -> Fraction:
             n_total_routes += 1
             if attacker in route.path:
                 n_bad_routes += 1
+    #Fraction creates a "Bruch" with the first value as numerator and the second as denominator
     return Fraction(n_bad_routes, n_total_routes)
 
 class Experiment(mp.Process, abc.ABC):
@@ -221,7 +223,9 @@ class Experiment(mp.Process, abc.ABC):
 
             self.output_queue.put(self.run_trial(trial))
 
+    #Creates an abstract class which has to be definded later on
     @abc.abstractmethod
+    #raise is used to give own errors, in this case if anythin happens where now error was created for
     def run_trial(self, trial):
         raise NotImplementedError()
 
@@ -237,18 +241,22 @@ class Figure2aExperiment(Experiment):
     def run_trial(self, trial: Tuple[(AS_ID, AS_ID)]):
         graph = self.graph
         n_hops = self.n_hops
+        #Takes the value passed by the function call by "trial" and assigns them to victim and attacker
         victim_id, attacker_id = trial
 
+        #Takes the desired AS as victim out of the full graph by its ID
         victim = graph.get_asys(victim_id)
         if victim is None:
             warnings.warn(f"No AS with ID {victim_id}")
             return Fraction(0, 1)
 
+        #Takes AS of attacker out of graph, like did for the victim
         attacker = graph.get_asys(attacker_id)
         if attacker is None:
             warnings.warn(f"No AS with ID {attacker_id}")
             return Fraction(0, 1)
-
+        
+        #starts to find a new routing table and executes the attack onto it by n hops
         graph.clear_routing_tables()
         graph.find_routes_to(victim)
         graph.hijack_n_hops(victim, attacker, n_hops)

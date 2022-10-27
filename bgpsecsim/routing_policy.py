@@ -4,9 +4,12 @@ from bgpsecsim.asys import Relation, Route, RoutingPolicy
 
 class DefaultPolicy(RoutingPolicy):
     def accept_route(self, route: Route) -> bool:
+    #not in combination with return, inverts the value
         return not route.contains_cycle()
+        #If Route contains a cycle, then it returns true -> the not inverts the bool and so the Route is declined as there is a cycel in it
 
     def prefer_route(self, current: Route, new: Route) -> bool:
+    #assert triggers error as soon as condition is false, in this case, if both final AS aren't the same
         assert current.final == new.final, "routes must have same final AS"
 
         for rule in self.preference_rules():
@@ -26,6 +29,7 @@ class DefaultPolicy(RoutingPolicy):
 
         return first_hop_rel == Relation.CUSTOMER or relation == Relation.CUSTOMER
 
+        # Generators are iterators, a kind of iterable you can only iterate over once. Generators do not store all the values in memory, they generate the values on the fly:
     def preference_rules(self) -> Generator[Callable[[Route], int], None, None]:
         # 1. Local preferences
         def local_pref(route):
@@ -51,6 +55,7 @@ class BGPsecHighSecPolicy(DefaultPolicy):
         # bgp_sec_enabled, but that is less convenient in our simulation.
         return super().accept_route(route) and not route.origin_invalid
 
+    # Lambda takes several arguments, but only has one expression
     def preference_rules(self) -> Generator[Callable[[Route], int], None, None]:
         # Prefer authenticated routes
         yield lambda route: not route.authenticated
