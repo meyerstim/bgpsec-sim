@@ -13,7 +13,7 @@ class AS(object):
     #__slots__ states which instance attributes you expect your object instances to have -> results in faster access
     __slots__ = [
         'as_id', 'neighbors', 'policy', 'publishes_rpki', 'publishes_path_end', 'bgp_sec_enabled',
-        'routing_table'
+        'routing_table', 'aspa'
     ]
 
     as_id: AS_ID
@@ -24,6 +24,7 @@ class AS(object):
     publishes_path_end: bool
     bgp_sec_enabled: bool
     routing_table: Dict[AS_ID, 'Route']
+    aspa: 'ASPA'
 
     def __init__(
     #self represents the instance of the class
@@ -42,6 +43,7 @@ class AS(object):
         self.bgp_sec_enabled = bgp_sec_enabled
         self.routing_table = {}
         self.reset_routing_table()
+        self.create_new_ASPA()
 
     #-> marks return function annotation. So tells which type the function should return, but does not force it.
     
@@ -128,6 +130,15 @@ class AS(object):
             authenticated=True,
         )
 
+    def create_new_ASPA(self) -> 'ASPA':
+        return ASPA (
+            as_id=AS_ID,
+            providers=self.get_providers(),
+        )
+
+    def get_aspa (self) -> Optional['ASPA']:
+        return self.aspa
+
 class Route(object):
     __slots__ = ['dest', 'path', 'origin_invalid', 'path_end_invalid', 'authenticated']
 
@@ -194,6 +205,20 @@ class Route(object):
         if flags:
             s += " " + " ".join(flags)
         return s
+
+
+class ASPA(object):
+    __slots__ = [ 'as_id', 'providers']
+
+    as_id: AS_ID
+    providers: List[AS.get_providers(as_id)]
+    def __init__(
+            self,
+            as_id: AS_ID,
+            providers: List[AS.get_providers()]
+    ):
+        self.as_id = as_id
+        self.providers = providers
 
 class RoutingPolicy(abc.ABC):
     @abc.abstractmethod
