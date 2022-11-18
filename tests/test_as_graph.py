@@ -4,7 +4,6 @@ import os
 
 import bgpsecsim.as_graph as as_graph
 from bgpsecsim.asys import Relation
-from bgpsecsim.asys import ASPA
 from bgpsecsim.as_graph import ASGraph
 
 AS_REL_FILEPATH = os.path.join(os.path.dirname(__file__), 'fixtures', 'as-rel.txt')
@@ -52,12 +51,17 @@ class TestASGraph(unittest.TestCase):
             route = asys.routing_table[8]
             assert route.final == asys
 
-    def check_aspa_object_creation(self):
+    def test_aspa_object_creation(self):
         graph = ASGraph(as_graph.parse_as_rel_file(AS_REL_FILEPATH))
         asys_8 = graph.get_asys(8)
         asys_6 = graph.get_asys(6)
-        assert asys_8.get_providers(asys_8) == asys_8.get_aspa()
-        assert asys_6.get_providers(asys_6) == asys_6.get_aspa()
+        asys_8.create_new_aspa()
+        asys_6.create_new_aspa()
+        assert asys_8.as_id == asys_8.get_aspa()[0]
+        assert asys_8.get_providers() == asys_8.get_aspa_providers()
+        assert asys_6.as_id == asys_6.get_aspa()[0]
+        assert asys_6.get_providers() == asys_6.get_aspa_providers()
+
 
 
 if __name__ == '__main__':
