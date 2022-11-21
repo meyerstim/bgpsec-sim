@@ -12,7 +12,7 @@ from bgpsecsim.asys import AS, AS_ID
 from bgpsecsim.as_graph import ASGraph
 from bgpsecsim.routing_policy import (
     DefaultPolicy, RPKIPolicy, PathEndValidationPolicy,
-    BGPsecHighSecPolicy, BGPsecMedSecPolicy, BGPsecLowSecPolicy,
+    BGPsecHighSecPolicy, BGPsecMedSecPolicy, BGPsecLowSecPolicy, ASPAPolicy
 )
 
 PARALLELISM = 1
@@ -37,11 +37,17 @@ def figure2a_line_2_bgpsec_partial(
         asys.policy = BGPsecMedSecPolicy()
     return figure2a_experiment(graph, trials, n_hops=1)
 
-def figure2a_line_3_two_hop(nx_graph: nx.Graph, trials: List[Tuple[AS_ID, AS_ID]]) -> List[Fraction]:
+def figure2a_line_3_two_hop(
+        nx_graph: nx.Graph,
+        trials: List[Tuple[AS_ID, AS_ID]]
+) -> List[Fraction]:
     graph = ASGraph(nx_graph, policy=PathEndValidationPolicy())
     return figure2a_experiment(graph, trials, n_hops=2)
 
-def figure2a_line_4_rpki(nx_graph: nx.Graph, trials: List[Tuple[AS_ID, AS_ID]]) -> List[Fraction]:
+def figure2a_line_4_rpki(
+        nx_graph: nx.Graph,
+        trials: List[Tuple[AS_ID, AS_ID]]
+) -> List[Fraction]:
     graph = ASGraph(nx_graph, policy=RPKIPolicy())
     return figure2a_experiment(graph, trials, n_hops=1)
 
@@ -70,6 +76,24 @@ def figure2a_line_5_bgpsec_high_full(
     graph = ASGraph(nx_graph, policy=BGPsecHighSecPolicy())
     for asys in graph.asyss.values():
         asys.bgp_sec_enabled = True
+    return figure2a_experiment(graph, trials, n_hops=1)
+
+def figure2a_line_6_aspa_partial(
+        nx_graph: nx.Graph,
+        deployment: int,
+        trials: List[Tuple[AS_ID, AS_ID]]
+) -> List[Fraction]:
+    graph = ASGraph(nx_graph, policy=RPKIPolicy())
+    for asys in graph.identify_top_isps(deployment):
+        asys.policy = ASPAPolicy()
+    return figure2a_experiment(graph, trials, n_hops=1)
+def figure2a_line_6_aspa(
+        nx_graph: nx.Graph,
+        trials: List[Tuple[AS_ID, AS_ID]]
+) -> List[Fraction]:
+    graph = ASGraph(nx_graph, policy=ASPAPolicy())
+    for asys in graph.asyss.values():
+        asys.aspa_enabled = True
     return figure2a_experiment(graph, trials, n_hops=1)
 
 def run_trial(graph, victim_id, attacker_id, n_hops):
@@ -174,6 +198,21 @@ def figure8_line_2_bgpsec_partial(
         results.extend(figure2a_experiment(graph, trials, n_hops=1))
     return results
 
+def figure8_line_3_aspa_partial(
+        nx_graph: nx.Graph,
+        deployment: int,
+        p: float,
+        trials: List[Tuple[AS_ID, AS_ID]]
+) -> List[Fraction]:
+    results = []
+    for _ in range(20):
+        graph = ASGraph(nx_graph, policy=RPKIPolicy())
+        for asys in graph.identify_top_isps(int(deployment / p)):
+            if random.random() < p:
+                asys.policy = ASPAPolicy()
+        results.extend(figure2a_experiment(graph, trials, n_hops=1))
+    return results
+
 def figure9_line_1_rpki_partial(
         nx_graph: nx.Graph,
         deployment: int,
@@ -217,7 +256,7 @@ class Experiment(mp.Process, abc.ABC):
         while not self._stopped.is_set():
             trial = self.input_queue.get()
 
-            # A None input is just used to stop blocking on the queue so we can check stopped.
+            # A None input is just used to stop blocking on the queue, so we can check stopped.
             if trial is None:
                 continue
 

@@ -108,12 +108,23 @@ def figure2(filename: str, nx_graph: nx.Graph, trials: List[Tuple[AS_ID, AS_ID]]
     line5_results = fmean(experiments.figure2a_line_5_bgpsec_med_full(nx_graph, trials))
     print("BGPsec (full deployment, legacy allowed): ", line5_results)
 
-    plt.figure(figsize=(10, 5))
+    line6_results = []
+    for deployment in deployments:
+        print(f"ASPA in partial deployment (deployment = {deployment})")
+        line6_results.append(fmean(experiments.figure2a_line_6_aspa_partial(nx_graph, deployment, trials)))
+    print("ASPA in partial deployment: ", line6_results)
+
+    line7_results = fmean(experiments.figure2a_line_6_aspa(nx_graph, trials))
+    print("ASPA (full deployment): ", line7_results)
+
+    plt.figure(figsize=(10, 7))
     plt.plot(deployments, line1_results, label="Next-AS")
     plt.plot(deployments, line2_results, label="BGPsec in partial deployment")
     plt.plot(deployments, np.repeat(line3_results, 11), label="2-hop")
     plt.plot(deployments, np.repeat(line4_results, 11), label="RPKI (full deployment)", linestyle="--")
     plt.plot(deployments, np.repeat(line5_results, 11), label="BGPsec (full deployment, legacy allowed)", linestyle="--")
+    plt.plot(deployments, line6_results, label="ASPA in partial deployment")
+    plt.plot(deployments, np.repeat(line7_results, 11), label="ASPA (full deployment, legacy allowed)", linestyle="--")
     plt.legend()
     plt.xlabel("Deployment (top ISPs)")
     plt.ylabel("Attacker's Success Rate")
@@ -145,9 +156,15 @@ def figure4(filename: str, nx_graph: nx.Graph, n_trials: int):
     line2_results = fmean(experiments.figure2a_line_5_bgpsec_med_full(nx_graph, trials))
     print("BGPsec (full deployment, legacy allowed): ", line2_results)
 
+    line3_results = fmean(experiments.figure2a_line_6_aspa(nx_graph, trials))
+    print("ASPA (full deployment): ", line3_results)
+
+
+
     plt.figure(figsize=(10, 5))
     plt.plot(hops, line1_results, label="k-hop attacker")
     plt.plot(hops, np.repeat(line2_results, 11), label="BGPsec (full deployment, legacy allowed)", linestyle="--")
+    plt.plot(hops, np.repeat(line3_results, 11), label="ASPA (full deployment)", linestyle="--")
     plt.legend()
     plt.xlabel("Hops")
     plt.ylabel("Attacker's Success Rate")
@@ -258,12 +275,24 @@ def figure8(filename: str, nx_graph: nx.Graph, n_trials: int, p: float):
     line5_results = fmean(experiments.figure2a_line_5_bgpsec_med_full(nx_graph, trials))
     print("BGPsec (full deployment, legacy allowed): ", line5_results)
 
-    plt.figure(figsize=(10, 5))
+    line6_results = []
+    for deployment in deployments:
+        print(f"ASPA in partial deployment (deployment = {deployment})")
+        random.setstate(rand_state)
+        line6_results.append(fmean(experiments.figure8_line_3_aspa_partial(nx_graph, deployment, p, trials)))
+    print("ASPA in partial deployment: ", line6_results)
+
+    line7_results = fmean(experiments.figure2a_line_6_aspa(nx_graph, trials))
+    print("ASPA (full deployment): ", line7_results)
+
+    plt.figure(figsize=(10, 7))
     plt.plot(deployments, line1_results, label="Next-AS")
     plt.plot(deployments, line2_results, label="BGPsec in partial deployment")
     plt.plot(deployments, np.repeat(line3_results, 11), label="2-hop")
     plt.plot(deployments, np.repeat(line4_results, 11), label="RPKI (full deployment)", linestyle="--")
     plt.plot(deployments, np.repeat(line5_results, 11), label="BGPsec (full deployment, legacy allowed)", linestyle="--")
+    plt.plot(deployments, line6_results, label="ASPA in partial deployment")
+    plt.plot(deployments, np.repeat(line7_results, 11), label="ASPA (full deployment)", linestyle="--")
     plt.legend()
     plt.xlabel("Expected Deployment (top ISPs)")
     plt.ylabel("Attacker's Success Rate")

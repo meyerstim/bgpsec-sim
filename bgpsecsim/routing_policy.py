@@ -1,4 +1,4 @@
-from typing import Callable, Generator, Optional
+from typing import Callable, Generator
 
 from bgpsecsim.asys import Relation, Route, RoutingPolicy
 
@@ -32,7 +32,7 @@ class DefaultPolicy(RoutingPolicy):
 
         return first_hop_rel == Relation.CUSTOMER or relation == Relation.CUSTOMER
 
-        # Generators are iterators, a kind of iterable you can only iterate over once. Generators do not store all the values in memory, they generate the values on the fly:
+    # Generators are iterators, a kind of iterable you can only iterate over once. Generators do not store all the values in memory, they generate the values on the fly:
     def preference_rules(self) -> Generator[Callable[[Route], int], None, None]:
         # 1. Local preferences
         def local_pref(route):
@@ -65,6 +65,7 @@ class BGPsecHighSecPolicy(DefaultPolicy):
     def preference_rules(self) -> Generator[Callable[[Route], int], None, None]:
         # Prefer authenticated routes
         yield lambda route: not route.authenticated
+
         # 1. Local preferences
         def local_pref(route):
             relation = route.final.get_relation(route.first_hop)
@@ -116,39 +117,54 @@ class BGPsecLowSecPolicy(DefaultPolicy):
         yield lambda route: route.first_hop.as_id
 
 
+def test_route_aspa(route: Route) -> None:
+    aspa_evaluation.clear()
+    for index, r in enumerate(route.path):
+        if index + 1 < len(route.path) and index - 1 >= 0:
+            prev_el = route.path[index - 1]
+            curr_el = r
+            next_el = route.path[index + 1]
+        else:
+            break
+        # TODO ASPA muss bereits vorher erstellt werden, da sonst alle AS der Route ein ASPA haben, auch die AS der malicious Route; Alternativ muss das Flag nur bei den korrekten gesetzt werden
+        r.create_new_aspa()
+        # If an ASPA Flag is not set, so AS has no ASPA Object, empty aspa_evaluation is returned,
+        # thus contains no INVALID and route is accepted at the end
+        if curr_el.aspa_enabled:
+            a = curr_el.get_aspa_providers()
+            if len(a) == 0:
+                aspa_evaluation.append("UNKNOWN")
+            else:
+                # If ASPA Object is not empty and next / before AS is contained in the corresponding ASes
+                # ASPA Object will return VALID otherwise invalid will be returned
+                for elements in a:
+                    if next_el == elements:
+                        aspa_evaluation.append("VALID")
+                        break
+                for elements in a:
+                    if prev_el == elements:
+                        aspa_evaluation.append("VALID")
+                        break
+                aspa_evaluation.append("INVALID")
+                break
+
+
 class ASPAPolicy(DefaultPolicy):
+
     def accept_route(self, route: Route) -> bool:
-        aspa_evaluation.clear()
-        for r in route.path:
-            r.create_new_aspa()
-            # If an ASPA Flag is not set, so AS has no ASPA Object, empty aspa_evaluation is returned, thus contains no INVALID and route is accepted at the end
-            if r.aspa_enabled:
-                a = r.get_aspa_providers()
-                if len(a) == 0:
-                    aspa_evaluation.append("UNKNOWN")
-                else:
-                    # If ASPA Object is not empty and next / before AS is contained in the corresponding ASes
-                    # ASPA Object will return VALID otherwise invalid will be returned
-                    for elements in a:
-                        # TODO if Abfrage so anpassen, dass sie das nächste Objekt aus der Liste prüft, aktuelle Abfrage vermutl. nicht korrekt
-                        if (route.path(r+1)) == elements:
-                            aspa_evaluation.append("VALID")
-                            # TODO return so korrekt ?? Soll Schleife verlassen um nicht mehr durch die zweite SChleife zu gehen / Nicht in den Fall INVALID springen
-                            return
-                    for elements in a:
-                        # TODO if Abfrage so anpassen, dass sie das nächste Objekt aus der Liste prüft, aktuelle Abfrage vermutl. nicht korrekt
-                        if (route.path(r-1)) == elements:
-                            aspa_evaluation.append("VALID")
-                            return
-                    aspa_evaluation.append("INVALID")
-                    return
+        test_route_aspa(route)
         # Accepts the route of none of the elements with ASPA activated has returned INVALID
         return super().accept_route(route) and not ("INVALID" in aspa_evaluation)
 
     # Lambda takes several arguments, but only has one expression
     def preference_rules(self) -> Generator[Callable[[Route], int], None, None]:
-        # Prefer authenticated routes
-        yield lambda route: not route.authenticated
+        # TODO Wird hier die Route richtig übergeben??
+        yield lambda route: test_route_aspa(route)
+        # Prefer fully VALID
+        yield lambda route: not ("INVALID" and "UNKNOWN" in aspa_evaluation)
+        # Prefer VALID and UNKNOWN; discard all INVALID
+        yield lambda route: not ("INVALID" in aspa_evaluation)
+
         # 1. Local preferences
         def local_pref(route):
             relation = route.final.get_relation(route.first_hop)
