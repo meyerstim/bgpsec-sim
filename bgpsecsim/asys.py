@@ -10,6 +10,9 @@ class Relation(Enum):
     PEER = 2
     PROVIDER = 3
 
+class AspaList:
+    List['AS']
+
 
 class AS(object):
     # __slots__ states which instance attributes you expect your object instances to have -> results in faster access
@@ -27,7 +30,7 @@ class AS(object):
     bgp_sec_enabled: bool
     routing_table: Dict[AS_ID, 'Route']
     # ASPA object is a list for the current AS with its ID and all its providers, which will be candidates for connections in ASPA algorithm
-    aspa: ['AS_ID', ['AS']]
+    aspa: ['AS_ID', AspaList]
     aspa_enabled: bool
 
     def __init__(
@@ -137,14 +140,16 @@ class AS(object):
             authenticated=True,
         )
 
-    def create_new_aspa(self):
+    def create_new_aspa(self) -> None:
         self.aspa = self.as_id, self.get_providers()
 
     def get_aspa(self):
-        return self.aspa
+        if hasattr(self, 'aspa'):
+            return self.aspa
 
     def get_aspa_providers(self):
-        return self.aspa[1]
+        if hasattr(self, 'aspa'):
+            return self.aspa[1]
 
 class Route(object):
     __slots__ = ['dest', 'path', 'origin_invalid', 'path_end_invalid', 'authenticated']

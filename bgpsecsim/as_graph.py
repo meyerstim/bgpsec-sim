@@ -60,6 +60,9 @@ class ASGraph(object):
             elif customer == as_id2:
                 as1.add_customer(as2)
                 as2.add_provider(as1)
+        #Creates aspa objects for all AS in the current graph
+        for as_id in graph.nodes:
+            self.asyss.get(as_id, None).create_new_aspa()
 
     def get_asys(self, as_id: AS_ID) -> Optional[AS]:
         return self.asyss.get(as_id, None)

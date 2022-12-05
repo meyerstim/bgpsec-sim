@@ -55,8 +55,8 @@ class TestASGraph(unittest.TestCase):
         graph = ASGraph(as_graph.parse_as_rel_file(AS_REL_FILEPATH))
         asys_8 = graph.get_asys(8)
         asys_6 = graph.get_asys(6)
-        asys_8.create_new_aspa()
-        asys_6.create_new_aspa()
+        print(asys_8.get_aspa_providers())
+        print(asys_6.get_aspa_providers())
         assert asys_8.as_id == asys_8.get_aspa()[0]
         assert asys_8.get_providers() == asys_8.get_aspa_providers()
         assert asys_6.as_id == asys_6.get_aspa()[0]

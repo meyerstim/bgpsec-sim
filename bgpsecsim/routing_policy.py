@@ -3,6 +3,8 @@ from typing import Callable, Generator
 from bgpsecsim.asys import Relation, Route, RoutingPolicy
 
 aspa_evaluation = []
+aspa_valley_down = False
+
 
 
 class DefaultPolicy(RoutingPolicy):
@@ -18,10 +20,13 @@ class DefaultPolicy(RoutingPolicy):
         for rule in self.preference_rules():
             current_val = rule(current)
             new_val = rule(new)
-            if current_val < new_val:
-                return False
-            if new_val < current_val:
-                return True
+
+            if current_val is not None:
+                if new_val is not None:
+                    if current_val < new_val:
+                        return False
+                    if new_val < current_val:
+                        return True
 
         return False
 
@@ -119,42 +124,59 @@ class BGPsecLowSecPolicy(DefaultPolicy):
 
 def test_route_aspa(route: Route) -> None:
     aspa_evaluation.clear()
+    prev_el = 0
+    curr_el = 0
+    next_el = 0
+
     for index, r in enumerate(route.path):
-        if index + 1 < len(route.path) and index - 1 >= 0:
+        if index + 1 < len(route.path):
             prev_el = route.path[index - 1]
             curr_el = r
             next_el = route.path[index + 1]
+
         else:
-            break
-        # TODO ASPA muss bereits vorher erstellt werden, da sonst alle AS der Route ein ASPA haben, auch die AS der malicious Route; Alternativ muss das Flag nur bei den korrekten gesetzt werden
-        r.create_new_aspa()
+            continue
+
         # If an ASPA Flag is not set, so AS has no ASPA Object, empty aspa_evaluation is returned,
         # thus contains no INVALID and route is accepted at the end
-        if curr_el.aspa_enabled:
-            a = curr_el.get_aspa_providers()
-            if len(a) == 0:
-                aspa_evaluation.append("UNKNOWN")
-            else:
-                # If ASPA Object is not empty and next / before AS is contained in the corresponding ASes
-                # ASPA Object will return VALID otherwise invalid will be returned
-                for elements in a:
-                    if next_el == elements:
-                        aspa_evaluation.append("VALID")
-                        break
-                for elements in a:
-                    if prev_el == elements:
-                        aspa_evaluation.append("VALID")
-                        break
-                aspa_evaluation.append("INVALID")
-                break
+        # TODO Hier ASPA enabled nutzen um prozentuale Verteilung abzuprüfen, da sonst auf 100% Distribution
+        # if curr_el.aspa_enabled:
+        a = curr_el.get_aspa_providers()
+        if len(a) == 0:
+            aspa_evaluation.append("UNKNOWN")
+        else:
+            # If ASPA Object is not empty and next / before AS is contained in the corresponding ASes
+            # ASPA Object will return VALID otherwise invalid will be returned
+            for elements in a:
+                # Current AS is provider of the next AS
+                if next_el.as_id == elements:
+                    aspa_evaluation.append("VALID")
+                    # print("VALID")
+                    # TODO Hier Valley free prüfen, also wenn der ASPA PFad einmal nach unten geht, danach nur noch als VALID annehmen, wenn Route nach unten geht, sonst als INVALID verwerden
+                    # aspa_valley_down = True
+                    break
+            for elements in a:
+                # Previous element, has current AS in its provider list -> Curr AS is provider of curr AS
+                if prev_el.as_id == elements:
+                    aspa_evaluation.append("VALID")
+                    #print("VALID")
+                    break
+            aspa_evaluation.append("INVALID")
+            #print("INVALID")
 
+            # TODO Status invalid wird hier noch falsch gesetzt, bzw. teils zu viele Einträge in aspa_evaluation
+            # Bedeutet dass Elemente mehrfach geprüft werden
+            # TODO aspa_valley_down prüfen
 
 class ASPAPolicy(DefaultPolicy):
 
     def accept_route(self, route: Route) -> bool:
+        #print(route)
+        #print(aspa_evaluation)
         test_route_aspa(route)
         # Accepts the route of none of the elements with ASPA activated has returned INVALID
-        return super().accept_route(route) and not ("INVALID" in aspa_evaluation)
+        # TODO Hier muss am Ende INVALID geprüft werden; aktuell haben alle gehijackten Routen ein UNKNOWN Element, alle anderen nicht; für hijacks wird keine ASPA erstellt und somit UNKNWON; Ziel: Hier muss auf Invalid und nicht auf UNKNOWN grpüft werden
+        return super().accept_route(route) and not ("UNKNOWN" in aspa_evaluation)
 
     # Lambda takes several arguments, but only has one expression
     def preference_rules(self) -> Generator[Callable[[Route], int], None, None]:

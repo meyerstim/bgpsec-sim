@@ -88,6 +88,9 @@ def get_path_lengths(as_rel_file, target_asn):
 @click.argument('as-rel-file')
 @click.argument('output-file')
 def generate(seed, trials, figure, as_rel_file, output_file):
+    import sys
+    sys.setrecursionlimit(100000)
+
     if seed is not None:
         random.seed(seed)
 

@@ -96,6 +96,13 @@ def figure2a_line_6_aspa(
         asys.aspa_enabled = True
     return figure2a_experiment(graph, trials, n_hops=1)
 
+def figure2a_line_7_none(
+        nx_graph: nx.Graph,
+        trials: List[Tuple[AS_ID, AS_ID]]
+) -> List[Fraction]:
+    graph = ASGraph(nx_graph, policy=DefaultPolicy())
+    return figure2a_experiment(graph, trials, n_hops=1)
+
 def run_trial(graph, victim_id, attacker_id, n_hops):
     victim = graph.get_asys(victim_id)
     if victim is None:
