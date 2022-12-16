@@ -7,6 +7,7 @@ aspa_valley_down = False
 
 
 
+
 class DefaultPolicy(RoutingPolicy):
     def accept_route(self, route: Route) -> bool:
         # not in combination with return, inverts the value
@@ -122,70 +123,71 @@ class BGPsecLowSecPolicy(DefaultPolicy):
         yield lambda route: route.first_hop.as_id
 
 
-def test_route_aspa(route: Route) -> None:
-    aspa_evaluation.clear()
-    prev_el = 0
-    curr_el = 0
-    next_el = 0
-
-    for index, r in enumerate(route.path):
-        if index + 1 < len(route.path):
-            prev_el = route.path[index - 1]
-            curr_el = r
-            next_el = route.path[index + 1]
-
-        else:
-            continue
-
-        # If an ASPA Flag is not set, so AS has no ASPA Object, empty aspa_evaluation is returned,
-        # thus contains no INVALID and route is accepted at the end
-        # TODO Hier ASPA enabled nutzen um prozentuale Verteilung abzuprüfen, da sonst auf 100% Distribution
-        # if curr_el.aspa_enabled:
-        a = curr_el.get_aspa_providers()
-        if len(a) == 0:
-            aspa_evaluation.append("UNKNOWN")
-        else:
-            # If ASPA Object is not empty and next / before AS is contained in the corresponding ASes
-            # ASPA Object will return VALID otherwise invalid will be returned
-            for elements in a:
-                # Current AS is provider of the next AS
-                if next_el.as_id == elements:
-                    aspa_evaluation.append("VALID")
-                    # print("VALID")
-                    # TODO Hier Valley free prüfen, also wenn der ASPA PFad einmal nach unten geht, danach nur noch als VALID annehmen, wenn Route nach unten geht, sonst als INVALID verwerden
-                    # aspa_valley_down = True
-                    break
-            for elements in a:
-                # Previous element, has current AS in its provider list -> Curr AS is provider of curr AS
-                if prev_el.as_id == elements:
-                    aspa_evaluation.append("VALID")
-                    #print("VALID")
-                    break
-            aspa_evaluation.append("INVALID")
-            #print("INVALID")
-
-            # TODO Status invalid wird hier noch falsch gesetzt, bzw. teils zu viele Einträge in aspa_evaluation
-            # Bedeutet dass Elemente mehrfach geprüft werden
-            # TODO aspa_valley_down prüfen
-
 class ASPAPolicy(DefaultPolicy):
 
     def accept_route(self, route: Route) -> bool:
-        #print(route)
-        #print(aspa_evaluation)
-        test_route_aspa(route)
-        # Accepts the route of none of the elements with ASPA activated has returned INVALID
-        # TODO Hier muss am Ende INVALID geprüft werden; aktuell haben alle gehijackten Routen ein UNKNOWN Element, alle anderen nicht; für hijacks wird keine ASPA erstellt und somit UNKNWON; Ziel: Hier muss auf Invalid und nicht auf UNKNOWN grpüft werden
-        return super().accept_route(route) and not ("UNKNOWN" in aspa_evaluation)
+
+        aspa_unknown = False
+        aspa_valid = False
+        aspa_invalid = False
+
+        aspa_evaluation.clear()
+        for index, r in enumerate(route.path):
+            if index + 1 < len(route.path):
+                prev_el = route.path[index - 1]
+                curr_el = r
+                next_el = route.path[index + 1]
+            else:
+                break
+            # If an ASPA Flag is not set, so AS has no ASPA Object, empty aspa_evaluation is returned,
+            # thus contains no INVALID and route is accepted at the end
+            # TODO Hier ASPA enabled nutzen um prozentuale Verteilung abzuprüfen, da sonst auf 100% Distribution
+            if curr_el.aspa_enabled:
+                a = curr_el.get_aspa_providers()
+                if len(a) == 0:
+                    aspa_evaluation.append("UNKNOWN")
+                    aspa_unknown = True
+                else:
+                    # If ASPA Object is not empty and next / before AS is contained in the corresponding ASes
+                    # ASPA Object will return VALID otherwise invalid will be returned
+                    for elements in a:
+                        # Current AS is provider of the next AS
+                        if next_el.as_id == elements:
+                            aspa_evaluation.append("VALID")
+                            aspa_valid = True
+                            # print("VALID")
+                            # TODO Hier Valley free prüfen, also wenn der ASPA PFad einmal nach unten geht, danach nur noch als VALID annehmen, wenn Route nach unten geht, sonst als INVALID verwerden
+                            # aspa_valley_down = True
+                            break
+                        # Previous element, has current AS in its provider list -> Curr AS is provider of curr AS
+                        elif prev_el.as_id == elements:
+                            # print("VALID")
+                            break
+                    # If one element is invalid then whole route has to be discarded and not be accepted
+                    aspa_evaluation.append("INVALID")
+                    aspa_invalid = True
+
+                    # TODO Status invalid wird hier noch falsch gesetzt, bzw. teils zu viele Einträge in aspa_evaluation
+                    # Bedeutet dass Elemente mehrfach geprüft werden
+                    # TODO aspa_valley_down prüfen
+
+            else:
+                aspa_evaluation.append("UNKNOWN")
+                aspa_unknown=True
+
+            # Accepts the route of none of the elements with ASPA activated has returned INVALID
+            # TODO Hier muss am Ende INVALID geprüft werden; aktuell haben alle gehijackten
+            #  Routen ein UNKNOWN Element, alle anderen nicht;
+            #  für hijacks wird keine ASPA erstellt und somit UNKNWON; Ziel:
+            #  Hier muss auf Invalid und nicht auf UNKNOWN grpüft werden
+        return super().accept_route(route) and not aspa_invalid #("UNKNOWN" in aspa_evaluation)
 
     # Lambda takes several arguments, but only has one expression
     def preference_rules(self) -> Generator[Callable[[Route], int], None, None]:
-        # TODO Wird hier die Route richtig übergeben??
-        yield lambda route: test_route_aspa(route)
         # Prefer fully VALID
-        yield lambda route: not ("INVALID" and "UNKNOWN" in aspa_evaluation)
+        # yield lambda route: not ("INVALID" and "UNKNOWN" in aspa_evaluation)
         # Prefer VALID and UNKNOWN; discard all INVALID
-        yield lambda route: not ("INVALID" in aspa_evaluation)
+        # yield lambda route: not ("INVALID" in aspa_evaluation)
 
         # 1. Local preferences
         def local_pref(route):

@@ -67,6 +67,11 @@ class AS(object):
         providers = filter(lambda id: self.neighbors[id] == Relation.PROVIDER, self.neighbors.keys())
         return [p.as_id for p in providers]
 
+    def get_customers(self) -> List[AS_ID]:
+        # returns a list of all providers of the current AS
+        customers = filter(lambda id: self.neighbors[id] == Relation.CUSTOMER, self.neighbors.keys())
+        return [p.as_id for p in customers]
+
     def add_peer(self, asys: 'AS') -> None:
         self.neighbors[asys] = Relation.PEER
 
@@ -152,7 +157,7 @@ class AS(object):
             return self.aspa[1]
 
 class Route(object):
-    __slots__ = ['dest', 'path', 'origin_invalid', 'path_end_invalid', 'authenticated']
+    __slots__ = ['dest', 'path', 'origin_invalid', 'path_end_invalid', 'authenticated', 'aspa_invalid', 'aspa_unknown']
 
     # Destination is an IP block that is owned by this AS. The AS_ID is the same as the origin's ID
     # for valid routes, but may differ in a hijacking attack.

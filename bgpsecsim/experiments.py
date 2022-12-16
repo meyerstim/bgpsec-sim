@@ -131,6 +131,7 @@ def figure2a_experiment(
     workers = [Figure2aExperiment(trial_queue, result_queue, graph, n_hops)
                for _ in range(PARALLELISM)]
 
+    # TODO bei start des workers wird "EOFError: Ran out of input" geworfen
     for worker in workers:
         worker.start()
 
@@ -229,6 +230,27 @@ def figure9_line_1_rpki_partial(
     for asys in graph.identify_top_isps(deployment):
         asys.policy = RPKIPolicy()
     return figure2a_experiment(graph, trials, n_hops=0)
+
+
+def figure10_aspa(
+        nx_graph: nx.Graph,
+        #deployment over AS per percentage in [tier1, tier2, tier3]
+        deployment: [int, int, int],
+        trials: List[Tuple[AS_ID, AS_ID]]
+) -> List[Fraction]:
+    graph = ASGraph(nx_graph, policy=ASPAPolicy())
+
+    if deployment[0] != 0:
+        for asys in random.sample(graph.get_tierOne(), int(len(graph.get_tierOne())/100*deployment[0])):
+            graph.get_asys(asys).aspa_enabled=True
+    if deployment[1] != 0:
+        for asys in random.sample(graph.get_tierTwo(), int(len(graph.get_tierTwo())/100*deployment[1])):
+            graph.get_asys(asys).aspa_enabled=True
+    if deployment[2] != 0:
+        for asys in random.sample(graph.get_tierThree(), int(len(graph.get_tierThree())/100*deployment[2])):
+            graph.get_asys(asys).aspa_enabled=True
+
+    return figure2a_experiment(graph, trials, n_hops=1)
 
 #Result is a fraction, shows the ratio of successfull attacks to not attacked routes
 def attacker_success_rate(graph: ASGraph, attacker: AS, victim: AS) -> Fraction:
