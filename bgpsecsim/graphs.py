@@ -337,7 +337,8 @@ def figure9(filename: str, nx_graph: nx.Graph, trials: List[Tuple[AS_ID, AS_ID]]
 def figure10(filename: str, nx_graph: nx.Graph, n_trials:int, tierOne:int):
     trials = uniform_random_trials(nx_graph, n_trials)
 
-    deployments = [10, 30, 50, 100]
+    # TODO Set more detailed evaluation by setting steps smaller then 10
+    deployments = np.arange(0, 110, 10)
 
     line1_results = []
     for deployment in deployments:
@@ -350,22 +351,27 @@ def figure10(filename: str, nx_graph: nx.Graph, n_trials:int, tierOne:int):
     line3_results = []
     for deployment in deployments:
         print(f"ASPA Tier2 (deployment = {deployment})")
-        line3_results.append(fmean(experiments.figure10_aspa(nx_graph, [deployment, 50], trials, tierOne)))
+        line3_results.append(fmean(experiments.figure10_aspa(nx_graph, [deployment, 20], trials, tierOne)))
     line4_results = []
     for deployment in deployments:
         print(f"ASPA Tier2 (deployment = {deployment})")
-        line4_results.append(fmean(experiments.figure10_aspa(nx_graph, [deployment, 80], trials, tierOne)))
+        line4_results.append(fmean(experiments.figure10_aspa(nx_graph, [deployment, 30], trials, tierOne)))
     line5_results = []
     for deployment in deployments:
         print(f"ASPA Tier2 (deployment = {deployment})")
-        line5_results.append(fmean(experiments.figure10_aspa(nx_graph, [deployment, 100], trials, tierOne)))
+        line5_results.append(fmean(experiments.figure10_aspa(nx_graph, [deployment, 50], trials, tierOne)))
+    line6_results = []
+    for deployment in deployments:
+        print(f"ASPA Tier2 (deployment = {deployment})")
+        line6_results.append(fmean(experiments.figure10_aspa(nx_graph, [deployment, 80], trials, tierOne)))
 
     plt.figure(figsize=(10, 7))
     plt.plot(deployments, line1_results, label="Tier3: 5%")
     plt.plot(deployments, line2_results, label="Tier3: 10%")
-    plt.plot(deployments, line3_results, label="Tier3: 50%")
-    plt.plot(deployments, line4_results, label="Tier3: 80%")
-    plt.plot(deployments, line5_results, label="Tier3: 100%")
+    plt.plot(deployments, line3_results, label="Tier3: 20%")
+    plt.plot(deployments, line4_results, label="Tier3: 30%")
+    plt.plot(deployments, line5_results, label="Tier3: 50%")
+    plt.plot(deployments, line6_results, label="Tier3: 80%")
 
     plt.legend()
     plt.xlabel("Deployment at percentage of Tier2 providers")
