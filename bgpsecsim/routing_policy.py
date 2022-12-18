@@ -2,17 +2,13 @@ from typing import Callable, Generator
 
 from bgpsecsim.asys import Relation, Route, RoutingPolicy
 
-aspa_evaluation = []
-aspa_valley_down = False
-
-
-
 
 class DefaultPolicy(RoutingPolicy):
     def accept_route(self, route: Route) -> bool:
         # not in combination with return, inverts the value
         return not route.contains_cycle()
-        # If Route contains a cycle, then it returns true -> the not inverts the bool and so the Route is declined as there is a cycel in it
+        # If Route contains a cycle, then it returns true
+        # -> the not inverts the bool and so the Route is declined as there is a cycel in it
 
     def prefer_route(self, current: Route, new: Route) -> bool:
         # assert triggers error as soon as condition is false, in this case, if both final AS aren't the same
@@ -38,7 +34,8 @@ class DefaultPolicy(RoutingPolicy):
 
         return first_hop_rel == Relation.CUSTOMER or relation == Relation.CUSTOMER
 
-    # Generators are iterators, a kind of iterable you can only iterate over once. Generators do not store all the values in memory, they generate the values on the fly:
+    # Generators are iterators, a kind of iterable you can only iterate over once.
+    # Generators do not store all the values in memory, they generate the values on the fly:
     def preference_rules(self) -> Generator[Callable[[Route], int], None, None]:
         # 1. Local preferences
         def local_pref(route):
@@ -126,12 +123,11 @@ class BGPsecLowSecPolicy(DefaultPolicy):
 class ASPAPolicy(DefaultPolicy):
 
     def accept_route(self, route: Route) -> bool:
-
         aspa_unknown = False
         aspa_valid = False
         aspa_invalid = False
+        aspa_valley_down = False
 
-        aspa_evaluation.clear()
         for index, r in enumerate(route.path):
             if index + 1 < len(route.path):
                 prev_el = route.path[index - 1]
@@ -139,51 +135,48 @@ class ASPAPolicy(DefaultPolicy):
                 next_el = route.path[index + 1]
             else:
                 break
-            # If an ASPA Flag is not set, so AS has no ASPA Object, empty aspa_evaluation is returned,
-            # thus contains no INVALID and route is accepted at the end
-            # TODO Hier ASPA enabled nutzen um prozentuale Verteilung abzuprüfen, da sonst auf 100% Distribution
+
             if curr_el.aspa_enabled:
+
                 a = curr_el.get_aspa_providers()
+                # No ASPA Object present for current AS, in reality does not implement ASPA
                 if len(a) == 0:
-                    aspa_evaluation.append("UNKNOWN")
                     aspa_unknown = True
                 else:
-                    # If ASPA Object is not empty and next / before AS is contained in the corresponding ASes
-                    # ASPA Object will return VALID otherwise invalid will be returned
                     for elements in a:
-                        # Current AS is provider of the next AS
+                        # Next AS is provider of the current AS, UPSTREAM
                         if next_el.as_id == elements:
-                            aspa_evaluation.append("VALID")
+                            if not aspa_valley_down:
+                                aspa_valid = True
+                            else:
+                                aspa_invalid = True
+                        # Current and Next AS are PEERs
+                        elif next_el.get_relation(curr_el) == 2:
                             aspa_valid = True
-                            # print("VALID")
-                            # TODO Hier Valley free prüfen, also wenn der ASPA PFad einmal nach unten geht, danach nur noch als VALID annehmen, wenn Route nach unten geht, sonst als INVALID verwerden
-                            # aspa_valley_down = True
-                            break
-                        # Previous element, has current AS in its provider list -> Curr AS is provider of curr AS
-                        elif prev_el.as_id == elements:
-                            # print("VALID")
-                            break
+                        # Current AS is provider of the next AS, DOWNSTREAM
+                        else:
+                            for elementsNew in next_el.get_aspa_providers():
+                                if curr_el.as_id == elementsNew:
+                                    aspa_valid = True
+                                    aspa_valley_down = True
+                                    break
+                                else:
+                                    aspa_invalid = True
+
                     # If one element is invalid then whole route has to be discarded and not be accepted
-                    aspa_evaluation.append("INVALID")
-                    aspa_invalid = True
+                    #aspa_invalid = True
 
-                    # TODO Status invalid wird hier noch falsch gesetzt, bzw. teils zu viele Einträge in aspa_evaluation
-                    # Bedeutet dass Elemente mehrfach geprüft werden
-                    # TODO aspa_valley_down prüfen
-
+            # If ASPA Flag is not set, so AS is seen as not implementing ASPA currently, returns status UNKNOWN
             else:
-                aspa_evaluation.append("UNKNOWN")
+
                 aspa_unknown=True
 
-            # Accepts the route of none of the elements with ASPA activated has returned INVALID
-            # TODO Hier muss am Ende INVALID geprüft werden; aktuell haben alle gehijackten
-            #  Routen ein UNKNOWN Element, alle anderen nicht;
-            #  für hijacks wird keine ASPA erstellt und somit UNKNWON; Ziel:
-            #  Hier muss auf Invalid und nicht auf UNKNOWN grpüft werden
-        return super().accept_route(route) and not aspa_invalid #("UNKNOWN" in aspa_evaluation)
+            # Accepts the route if none of the elements with ASPA activated has returned INVALID
+        return super().accept_route(route) and not aspa_invalid
 
     # Lambda takes several arguments, but only has one expression
     def preference_rules(self) -> Generator[Callable[[Route], int], None, None]:
+        # TODO Set preference Rules
         # Prefer fully VALID
         # yield lambda route: not ("INVALID" and "UNKNOWN" in aspa_evaluation)
         # Prefer VALID and UNKNOWN; discard all INVALID

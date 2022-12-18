@@ -83,16 +83,8 @@ def figure2a_line_6_aspa_partial(
         deployment: int,
         trials: List[Tuple[AS_ID, AS_ID]]
 ) -> List[Fraction]:
-    graph = ASGraph(nx_graph, policy=RPKIPolicy())
-    for asys in graph.identify_top_isps(deployment):
-        asys.policy = ASPAPolicy()
-    return figure2a_experiment(graph, trials, n_hops=1)
-def figure2a_line_6_aspa(
-        nx_graph: nx.Graph,
-        trials: List[Tuple[AS_ID, AS_ID]]
-) -> List[Fraction]:
     graph = ASGraph(nx_graph, policy=ASPAPolicy())
-    for asys in graph.asyss.values():
+    for asys in graph.identify_top_isps(deployment):
         asys.aspa_enabled = True
     return figure2a_experiment(graph, trials, n_hops=1)
 
@@ -130,8 +122,7 @@ def figure2a_experiment(
     result_queue: mp.Queue = mp.Queue()
     workers = [Figure2aExperiment(trial_queue, result_queue, graph, n_hops)
                for _ in range(PARALLELISM)]
-
-    # TODO bei start des workers wird "EOFError: Ran out of input" geworfen
+    # TODO "EOFError: Ran out of input" Error is thrown, when entering for
     for worker in workers:
         worker.start()
 
@@ -214,10 +205,10 @@ def figure8_line_3_aspa_partial(
 ) -> List[Fraction]:
     results = []
     for _ in range(20):
-        graph = ASGraph(nx_graph, policy=RPKIPolicy())
+        graph = ASGraph(nx_graph, policy=ASPAPolicy())
         for asys in graph.identify_top_isps(int(deployment / p)):
             if random.random() < p:
-                asys.policy = ASPAPolicy()
+                asys.aspa_enabled = True
         results.extend(figure2a_experiment(graph, trials, n_hops=1))
     return results
 
@@ -234,20 +225,20 @@ def figure9_line_1_rpki_partial(
 
 def figure10_aspa(
         nx_graph: nx.Graph,
-        #deployment over AS per percentage in [tier1, tier2, tier3]
-        deployment: [int, int, int],
-        trials: List[Tuple[AS_ID, AS_ID]]
+        #deployment over AS per percentage in [tier2, tier3]
+        deployment: [int, int],
+        trials: List[Tuple[AS_ID, AS_ID]],
+        tierOne: int
 ) -> List[Fraction]:
     graph = ASGraph(nx_graph, policy=ASPAPolicy())
 
+    for asys in random.sample(graph.get_tierOne(), int(len(graph.get_tierOne())/100*tierOne)):
+        graph.get_asys(asys).aspa_enabled=True
     if deployment[0] != 0:
-        for asys in random.sample(graph.get_tierOne(), int(len(graph.get_tierOne())/100*deployment[0])):
+        for asys in random.sample(graph.get_tierTwo(), int(len(graph.get_tierTwo())/100*deployment[0])):
             graph.get_asys(asys).aspa_enabled=True
     if deployment[1] != 0:
-        for asys in random.sample(graph.get_tierTwo(), int(len(graph.get_tierTwo())/100*deployment[1])):
-            graph.get_asys(asys).aspa_enabled=True
-    if deployment[2] != 0:
-        for asys in random.sample(graph.get_tierThree(), int(len(graph.get_tierThree())/100*deployment[2])):
+        for asys in random.sample(graph.get_tierThree(), int(len(graph.get_tierThree())/100*deployment[1])):
             graph.get_asys(asys).aspa_enabled=True
 
     return figure2a_experiment(graph, trials, n_hops=1)
