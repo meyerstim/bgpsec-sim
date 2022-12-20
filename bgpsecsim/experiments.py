@@ -167,6 +167,18 @@ def figure7b(
         asys.policy = BGPsecMedSecPolicy()
     return figure2a_experiment(graph, trials, n_hops=1)
 
+# ASPA deployed by Top 100 providers
+def figure7c(
+        nx_graph: nx.Graph,
+        deployment: int,
+        trials: List[Tuple[AS_ID, AS_ID]]
+) -> List[Fraction]:
+    graph = ASGraph(nx_graph, policy=ASPAPolicy())
+    for asys in graph.identify_top_isps(deployment):
+        asys.policy = ASPAPolicy()
+        asys.aspa_enabled = True
+    return figure2a_experiment(graph, trials, n_hops=1)
+
 def figure8_line_1_next_as(
         nx_graph: nx.Graph,
         deployment: int,

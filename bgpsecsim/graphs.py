@@ -243,6 +243,45 @@ def figure7b(filename: str, nx_graph: nx.Graph, n_trials: int):
     plt.ylabel("Attacker's Success Rate")
     plt.savefig(filename)
 
+
+def figure7c(filename: str, nx_graph: nx.Graph, n_trials: int):
+    results = []
+    attacks = get_attacks()
+
+    for (label, filepath, as_rel_file) in attacks:
+        nx_graph = as_graph.parse_as_rel_file(as_rel_file)
+        print("Loaded graph for ", label)
+
+        with open(filepath) as f:
+            attackers = None
+            targets = []
+            # Expects 1 attacker, n victims, comments beginning with #
+            for l in f:
+                if l[0] == '#':
+                    continue
+                if attackers == None:
+                    attackers = [int(l)]
+                    continue
+                targets.append(int(l))
+
+        trials = list(itertools.product(targets, attackers))
+
+        deployments = np.arange(0, 110, 10)
+
+        attack_results = []
+        for deployment in deployments:
+            attack_results.append(fmean(experiments.figure7c(nx_graph, deployment, trials)))
+        results.append(attack_results)
+        print(label, attack_results)
+
+    plt.figure(figsize=(10, 5))
+    for i in range(len(results)):
+        plt.plot(deployments, results[i], label=attacks[i][0])
+    plt.legend()
+    plt.xlabel("Deployment (top ISPs)")
+    plt.ylabel("Attacker's Success Rate")
+    plt.savefig(filename)
+
 def figure8(filename: str, nx_graph: nx.Graph, n_trials: int, p: float):
     trials = uniform_random_trials(nx_graph, n_trials)
     deployments = np.arange(0, 110, 10)
