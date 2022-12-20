@@ -10,76 +10,75 @@ from bgpsecsim.routing_policy import DefaultPolicy
 
 
 def parse_as_rel_file_new(filename: str) -> nx.Graph:
-    pickleGraph = pickle.load(open(filename, "rb"))
+    try:
+        pickleGraph = pickle.load(open(filename, "rb"))
+        node_relationships = {}
+        graph = nx.Graph()
+        for node in pickleGraph.nodes:
+            customers = []
+            providers = []
+            peers = []
 
-    node_relationships = {}
+            for in_edges in pickleGraph.in_edges(node):  # Add all peers
+                for out_edges in pickleGraph.out_edges(node):
+                    if in_edges[0] == out_edges[1] and in_edges[1] == out_edges[0]:
+                        peers.append(in_edges[0])
+            for edge in pickleGraph.in_edges(node):
+                if edge[0] not in peers:
+                    customers.append(edge[0])  # Add all customers (who are not peers already)
+            for edge in pickleGraph.out_edges(node):
+                if edge[1] not in peers:
+                    providers.append(edge[1])  # Add all providers (who are not peers already)
 
-    graph = nx.Graph()
+            node_relationships[node] = (customers, providers, peers)  # Store in dict
+        for node in node_relationships:
+            # node:     1234: ([customers], [providers], [peers])
+            if node not in graph:
+                graph.add_node(node)
 
-    for node in pickleGraph.nodes:
-        customers = []
-        providers = []
-        peers = []
+            for customer in node_relationships[node][0]:
+                if customer not in graph:
+                    graph.add_node(customer)
+                graph.add_edge(node, customer, customer=customer)
 
-        for in_edges in pickleGraph.in_edges(node):  # Add all peers
-            for out_edges in pickleGraph.out_edges(node):
-                if in_edges[0] == out_edges[1] and in_edges[1] == out_edges[0]:
-                    peers.append(in_edges[0])
-        for edge in pickleGraph.in_edges(node):
-            if edge[0] not in peers:
-                customers.append(edge[0])  # Add all customers (who are not peers already)
-        for edge in pickleGraph.out_edges(node):
-            if edge[1] not in peers:
-                providers.append(edge[1])  # Add all providers (who are not peers already)
+            for peer in node_relationships[node][2]:
+                if peer not in graph:
+                    graph.add_node(peer)
+                graph.add_edge(node, peer, customer=None)
 
-        node_relationships[node] = (customers, providers, peers)  # Store in dict
-
-    for node in node_relationships:
-        # node:     1234: ([customers], [providers], [peers])
-        if node not in graph:
-            graph.add_node(node)
-
-        for customer in node_relationships[node][0]:
-            if customer not in graph:
-                graph.add_node(customer)
-            graph.add_edge(node, customer, customer=customer)
-
-        for peer in node_relationships[node][2]:
-            if peer not in graph:
-                graph.add_node(peer)
-            graph.add_edge(node, peer, customer=None)
-
-    return graph
+        return graph
+    except:
+        print("AS_Rel-File could not be read successfully.")
 
 
 def parse_as_rel_file(filename: str) -> nx.Graph:
-    with open(filename, 'r') as f:
-        graph = nx.Graph()
+    try:
+        with open(filename, 'r') as f:
+            graph = nx.Graph()
 
-        for line in f:
-            if line.startswith('#'):
-                continue
+            for line in f:
+                if line.startswith('#'):
+                    continue
 
-            # The 'serial-1' as-rel files contain p2p and p2c relationships. The format is:
-            # <provider-as>|<customer-as>|-1
-            # <peer-as>|<peer-as>|0
-            items = line.split('|')
-            # item does not have all the required information, so error is thrown for this line
-            if len(items) != 3:
-                print("Reading AS_Rel-File Type1 not successfull, trying to open it as pickled graph.")
-                parse_as_rel_file_new(str)
-                return
-                #raise error.InvalidASRelFile(filename, f"bad line: {line}")
+                # The 'serial-1' as-rel files contain p2p and p2c relationships. The format is:
+                # <provider-as>|<customer-as>|-1
+                # <peer-as>|<peer-as>|0
+                items = line.split('|')
+                # item does not have all the required information, so error is thrown for this line
+                if len(items) != 3:
+                    raise error.InvalidASRelFile(filename, f"bad line: {line}")
 
-            [as1, as2, rel] = map(int, items)
-            if as1 not in graph:
-                graph.add_node(as1)
-            if as2 not in graph:
-                graph.add_node(as2)
+                [as1, as2, rel] = map(int, items)
+                if as1 not in graph:
+                    graph.add_node(as1)
+                if as2 not in graph:
+                    graph.add_node(as2)
 
-            customer = as2 if rel == -1 else None
-            graph.add_edge(as1, as2, customer=customer)
-    return graph
+                customer = as2 if rel == -1 else None
+                graph.add_edge(as1, as2, customer=customer)
+        return graph
+    except:
+        parse_as_rel_file_new(str)
 
 
 
