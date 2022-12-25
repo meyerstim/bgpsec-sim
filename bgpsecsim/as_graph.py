@@ -9,7 +9,7 @@ from bgpsecsim.asys import AS, AS_ID, Relation, Route, RoutingPolicy
 from bgpsecsim.routing_policy import DefaultPolicy
 
 
-def parse_as_rel_file(filename: str) -> nx.Graph:
+def parse_as_rel_file_old(filename: str) -> nx.Graph:
     with open(filename, 'r') as f:
         graph = nx.Graph()
 
@@ -36,7 +36,7 @@ def parse_as_rel_file(filename: str) -> nx.Graph:
     return graph
 
 
-def parse_as_rel_file_new(filename: str) -> nx.Graph:
+def parse_as_rel_file(filename: str) -> nx.Graph:
     pickleGraph = pickle.load(open(filename, "rb"))
 
     node_relationships = {}

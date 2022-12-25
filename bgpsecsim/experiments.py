@@ -15,7 +15,7 @@ from bgpsecsim.routing_policy import (
     BGPsecHighSecPolicy, BGPsecMedSecPolicy, BGPsecLowSecPolicy, ASPAPolicy
 )
 
-PARALLELISM = 1
+PARALLELISM = 32
 
 def figure2a_line_1_next_as(
         nx_graph: nx.Graph,
