@@ -417,6 +417,34 @@ def figure10(filename: str, nx_graph: nx.Graph, n_trials:int, tierOne:int):
     plt.ylabel("Attacker's Success Rate (in %)")
     plt.savefig(filename)
 
+def figure10_3d(filename: str, nx_graph: nx.Graph, n_trials:int):
+    trials = uniform_random_trials(nx_graph, n_trials)
+
+    # TODO Set more detailed evaluation by setting steps smaller then 10
+    deploymentsTierThree = np.arange(0, 101, 20)
+    deploymentsTierTwo = np.arange(0, 101, 20)
+    deploymentsTierOne = np.arange(0, 101, 20)
+
+    line1_results = []
+    for deployment in deploymentsTierThree:
+        for deployment2 in deploymentsTierTwo:
+            for deployment3 in deploymentsTierOne:
+                print(f"ASPA Tier3 (deployment = {deployment})")
+                line1_results.append(fmean(experiments.figure10_aspa(nx_graph, [deployment, deployment2], trials, deployment3)))
+
+    plt.figure(figsize=(10, 7))
+    ax = plt.axes(projection='3d')
+    ax.grid()
+
+    ax.plot3D(deploymentsTierThree, deploymentsTierTwo, line1_results)
+    ax.set_title('ASPA in various deployment scenarios')
+
+    ax.set_xlabel('Tier Two')
+    ax.set_ylabel('Tier One')
+    ax.set_zlabel('Attackers Success Rate (in %)')
+
+    plt.savefig(filename)
+
 
 def figure10_100(filename: str, nx_graph: nx.Graph, n_trials: int):
     figure10(filename, nx_graph, n_trials, 100)
