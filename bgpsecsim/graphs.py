@@ -7,6 +7,9 @@ import numpy as np
 import random
 import statistics
 from typing import List, Sequence, Tuple
+from matplotlib import cm
+from numpy import asarray
+from numpy import savetxt
 
 from bgpsecsim.asys import AS_ID
 import bgpsecsim.as_graph as as_graph
@@ -420,23 +423,31 @@ def figure10(filename: str, nx_graph: nx.Graph, n_trials:int, tierOne:int):
 def figure10_3d(filename: str, nx_graph: nx.Graph, n_trials:int):
     trials = uniform_random_trials(nx_graph, n_trials)
 
-    # TODO Set more detailed evaluation by setting steps smaller then 10
-    deploymentsTierThree = np.arange(0, 101, 20)
-    deploymentsTierTwo = np.arange(0, 101, 20)
-    deploymentsTierOne = np.arange(0, 101, 20)
+    deploymentsTierThree = np.arange(0, 101, 5)
+    deploymentsTierTwo = np.arange(0, 101, 5)
+    deploymentsTierOne = np.arange(0, 101, 5)
 
     line1_results = []
     for deployment in deploymentsTierThree:
         for deployment2 in deploymentsTierTwo:
             for deployment3 in deploymentsTierOne:
-                print(f"ASPA Tier3 (deployment = {deployment})")
+                print(f"ASPA deployment = {deployment3, deployment2, deployment})")
                 line1_results.append(fmean(experiments.figure10_aspa(nx_graph, [deployment, deployment2], trials, deployment3)))
+
+    data = np.asarray(line1_results)
+    np.savetxt('results.csv', data, delimiter=',')
+
+    print(line1_results)
+
+    X = np.reshape(deploymentsTierOne, (len(deploymentsTierOne), -1))
+    Y = np.reshape(deploymentsTierTwo, (len(deploymentsTierOne), -1))
+    Z = np.reshape(line1_results, (len(deploymentsTierOne), -1))
 
     plt.figure(figsize=(10, 7))
     ax = plt.axes(projection='3d')
     ax.grid()
 
-    ax.plot3D(deploymentsTierThree, deploymentsTierTwo, line1_results)
+    ax.plot_surface(X, Y, Z, cmap=cm.coolwarm)
     ax.set_title('ASPA in various deployment scenarios')
 
     ax.set_xlabel('Tier Two')
