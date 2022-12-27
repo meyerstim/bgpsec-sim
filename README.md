@@ -37,6 +37,7 @@ $ pipenv run python -m bgpsecsim
 
 After execution of the command, the four possible command arguments will be shown according to the cli.py:
 - check-graph
+- evaluation
 - find-route
 - generate
 - get-path-lengths
@@ -56,6 +57,24 @@ Several parameters have to be specified and passed along with the command:
 Example command (runs figure3a with 100 trials)
 ```bash
 $ pipenv run python -m bgpsecsim generate --trials 100 figure3a caida-data/20221101.as-rel.txt outputs/figure3a_100trials
+```
+
+## Evaluation
+
+Command "evaluation" can be used to generate a 3-dimensional graphic representation for data gained by running figure_10 to analyse optimal ASPA deployment scenarios.
+Data gets exported to .csv file, when "generate" function with the desired experiment was run. 
+This file can now be used to create graphic output.
+
+Value "threshold" can be used to get a more detailed version of the graphic. All data points which have an attacker-success rate worse then the given value, will be excluded from the graphic.
+This results in a graph with fewer data points, which allows a finer view.
+
+Several parameters have to be specified and passed along with the command:
+- input-file: path to the file with the values received by running the figure_10 experiment
+- output-file: path and desired name of the output graphic
+- threshold: Integer, values with worse success to be cut out from graphic
+
+```bash
+$ pipenv run python -m bgpsecsim evaluate results.csv graphic -threshold 0.005
 ```
 
 
