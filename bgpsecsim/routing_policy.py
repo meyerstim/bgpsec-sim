@@ -144,7 +144,6 @@ class ASPAPolicy(DefaultPolicy):
                 # No ASPA Object present for current AS, in reality does not implement ASPA
                 if len(a) == 0:
                     aspa_unknown = True
-                    route.aspa_unknown = True
                 else:
                     for elements in a:
                         # Next AS is provider of the current AS, UPSTREAM
@@ -172,9 +171,7 @@ class ASPAPolicy(DefaultPolicy):
 
             # If ASPA Flag is not set, so AS is seen as not implementing ASPA currently, returns status UNKNOWN
             else:
-
                 aspa_unknown = True
-                route.aspa_unknown = True
 
             # Accepts the route if none of the elements with ASPA activated has returned INVALID
         return super().accept_route(route) and not aspa_invalid
@@ -183,7 +180,7 @@ class ASPAPolicy(DefaultPolicy):
     def preference_rules(self) -> Generator[Callable[[Route], int], None, None]:
         # TODO Set preference Rules
         # Prefer fully VALID
-        yield lambda route: not route.aspa_unknown
+        # yield lambda route: not route.aspa_unknown
         # Prefer VALID and UNKNOWN; discard all INVALID
         # yield lambda route: not ("INVALID" in aspa_evaluation)
 
