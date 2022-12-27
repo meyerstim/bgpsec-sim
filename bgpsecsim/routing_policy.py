@@ -127,6 +127,8 @@ class ASPAPolicy(DefaultPolicy):
         aspa_valid = False
         aspa_invalid = False
         aspa_valley_down = False
+        route.aspa_unknown = False
+        route.aspa_invalid = False
 
 
 
