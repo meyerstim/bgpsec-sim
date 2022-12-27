@@ -379,7 +379,7 @@ def figure9(filename: str, nx_graph: nx.Graph, trials: List[Tuple[AS_ID, AS_ID]]
 def figure10(filename: str, nx_graph: nx.Graph, n_trials:int, tierOne:int):
     trials = uniform_random_trials(nx_graph, n_trials)
 
-    # TODO Set more detailed evaluation by setting steps smaller then 10
+    # TODO Set more detailed eval by setting steps smaller then 10
     deployments = np.arange(0, 110, 10)
 
     line1_results = []

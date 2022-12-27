@@ -170,6 +170,9 @@ class Route(object):
     # Whether the path is authenticated with BGPsec.
     authenticated: bool
 
+    aspa_invalid: bool
+    aspa_unknown: bool
+
     def __init__(
         self,
         dest: AS_ID,
@@ -177,12 +180,17 @@ class Route(object):
         origin_invalid: bool,
         path_end_invalid: bool,
         authenticated: bool,
+        aspa_invalid: bool,
+        aspa_unknown: bool,
     ):
         self.dest = dest
         self.path = path
         self.origin_invalid = origin_invalid
         self.path_end_invalid = path_end_invalid
         self.authenticated = authenticated
+        self.aspa_invalid = False
+        self.aspa_unknown = False
+
 
 # @property is python way to create getter and setter method
     @property

@@ -127,10 +127,6 @@ class ASPAPolicy(DefaultPolicy):
         aspa_valid = False
         aspa_invalid = False
         aspa_valley_down = False
-        route.aspa_unknown = False
-        route.aspa_invalid = False
-
-
 
         for index, r in enumerate(route.path):
             if index + 1 < len(route.path):
@@ -146,6 +142,7 @@ class ASPAPolicy(DefaultPolicy):
                 # No ASPA Object present for current AS, in reality does not implement ASPA
                 if len(a) == 0:
                     aspa_unknown = True
+                    route.aspa_unknown = True
                 else:
                     for elements in a:
                         # Next AS is provider of the current AS, UPSTREAM
@@ -154,6 +151,7 @@ class ASPAPolicy(DefaultPolicy):
                                 aspa_valid = True
                             else:
                                 aspa_invalid = True
+                                route.aspa_invalid = True
                         # Current and Next AS are PEERs
                         elif next_el.get_relation(curr_el) == 2:
                             aspa_valid = True
@@ -167,6 +165,7 @@ class ASPAPolicy(DefaultPolicy):
                                     break
                                 else:
                                     aspa_invalid = True
+                                    route.aspa_invalid = True
 
                     # If one element is invalid then whole route has to be discarded and not be accepted
                     #aspa_invalid = True
@@ -174,6 +173,7 @@ class ASPAPolicy(DefaultPolicy):
             # If ASPA Flag is not set, so AS is seen as not implementing ASPA currently, returns status UNKNOWN
             else:
                 aspa_unknown = True
+                route.aspa_unknown = True
 
             # Accepts the route if none of the elements with ASPA activated has returned INVALID
         return super().accept_route(route) and not aspa_invalid

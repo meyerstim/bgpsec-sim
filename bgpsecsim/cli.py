@@ -7,6 +7,7 @@ import bgpsecsim.experiments as experiments
 import bgpsecsim.graphs as graphs
 import bgpsecsim.routing_policy as routing_policy
 from bgpsecsim.as_graph import ASGraph
+import other.evaluation as eval
 
 @click.group()
 def cli():
@@ -99,6 +100,14 @@ def generate(seed, trials, figure, as_rel_file, output_file):
 
     func = getattr(graphs, figure)
     func(output_file, nx_graph, trials)
+
+
+@cli.command()
+@click.argument('input-file')
+@click.argument('output-file')
+@click.option('--threshold', '-t', type=float, default=0.005)
+def evaluate(input_file, output_file, threshold):
+    eval.evaluate(input_file, output_file, threshold)
 
 if __name__ == '__main__':
     cli()
