@@ -435,7 +435,7 @@ def figure10_3d(filename: str, nx_graph: nx.Graph, n_trials:int):
                 line1_results.append(fmean(experiments.figure10_aspa(nx_graph, [deployment, deployment2], trials, deployment3)))
 
     data = np.asarray(line1_results)
-    np.savetxt('results.csv', data, delimiter=',')
+    np.savetxt(filename+'.csv', data, delimiter=',')
 
     print(line1_results)
 
@@ -450,9 +450,9 @@ def figure10_3d(filename: str, nx_graph: nx.Graph, n_trials:int):
     ax.plot_surface(X, Y, Z, cmap=cm.coolwarm)
     ax.set_title('ASPA in various deployment scenarios')
 
-    ax.set_xlabel('Tier Two')
-    ax.set_ylabel('Tier One')
-    ax.set_zlabel('Attackers Success Rate (in %)')
+    ax.set_xlabel('Tier One')
+    ax.set_ylabel('Tier Two')
+    ax.set_zlabel('Attackers Success Rate')
 
     plt.savefig(filename)
 

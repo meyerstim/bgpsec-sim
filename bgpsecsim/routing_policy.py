@@ -180,7 +180,7 @@ class ASPAPolicy(DefaultPolicy):
     def preference_rules(self) -> Generator[Callable[[Route], int], None, None]:
         # TODO Set preference Rules
         # Prefer fully VALID
-        # yield lambda route: not route.aspa_unknown
+        yield lambda route: not route.aspa_unknown
         # Prefer VALID and UNKNOWN; discard all INVALID
         # yield lambda route: not ("INVALID" in aspa_evaluation)
 
