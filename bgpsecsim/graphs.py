@@ -109,25 +109,25 @@ def figure2(filename: str, nx_graph: nx.Graph, trials: List[Tuple[AS_ID, AS_ID]]
     line4_results = fmean(experiments.figure2a_line_4_rpki(nx_graph, trials))
     print("RPKI (full deployment): ", line4_results)
 
-    #line5_results = fmean(experiments.figure2a_line_5_bgpsec_med_full(nx_graph, trials))
-    #print("BGPsec (full deployment, legacy allowed): ", line5_results)
+    line5_results = fmean(experiments.figure2a_line_5_bgpsec_med_full(nx_graph, trials))
+    print("BGPsec (full deployment, legacy allowed): ", line5_results)
 
-    line6_results = []
-    for deployment in deployments:
-        print(f"ASPA in partial deployment (deployment = {deployment})")
-        line6_results.append(fmean(experiments.figure2a_line_6_aspa_partial(nx_graph, deployment, trials)))
-    print("ASPA in partial deployment: ", line6_results)
+    #line6_results = []
+    #for deployment in deployments:
+    #    print(f"ASPA in partial deployment (deployment = {deployment})")
+    #    line6_results.append(fmean(experiments.figure2a_line_6_aspa_partial(nx_graph, deployment, trials)))
+    #print("ASPA in partial deployment: ", line6_results)
 
     plt.figure(figsize=(10, 7))
     plt.plot(deployments, line1_results, label="Next-AS")
     plt.plot(deployments, line2_results, label="BGPsec in partial deployment")
     plt.plot(deployments, np.repeat(line3_results, 11), label="2-hop")
     plt.plot(deployments, np.repeat(line4_results, 11), label="RPKI (full deployment)", linestyle="--")
-    #plt.plot(deployments, np.repeat(line5_results, 11), label="BGPsec (full deployment, legacy allowed)", linestyle="--")
-    plt.plot(deployments, line6_results, label="ASPA in partial deployment")
+    plt.plot(deployments, np.repeat(line5_results, 11), label="BGPsec (full deployment, legacy allowed)", linestyle="--")
+    #plt.plot(deployments, line6_results, label="ASPA in partial deployment")
     plt.legend()
     plt.xlabel("Deployment at number of top ISPs, ranked by customer count")
-    plt.ylabel("Attacker's Success Rate")
+    plt.ylabel("Attacker's Success Rate (in %)")
     plt.savefig(filename)
 
 
@@ -167,7 +167,7 @@ def figure4(filename: str, nx_graph: nx.Graph, n_trials: int):
     plt.plot(hops, np.repeat(line2_results, 11), label="BGPsec (full deployment, legacy allowed)", linestyle="--")
     plt.legend()
     plt.xlabel("Hops")
-    plt.ylabel("Attacker's Success Rate")
+    plt.ylabel("Attacker's Success Rate (in %)")
     plt.savefig(filename)
 
 def figure7a(filename: str, nx_graph: nx.Graph, n_trials: int):
@@ -205,7 +205,7 @@ def figure7a(filename: str, nx_graph: nx.Graph, n_trials: int):
         plt.plot(deployments, results[i], label=attacks[i][0])
     plt.legend()
     plt.xlabel("Deployment (top ISPs)")
-    plt.ylabel("Attacker's Success Rate")
+    plt.ylabel("Attacker's Success Rate (in %)")
     plt.savefig(filename)
 
 def figure7b(filename: str, nx_graph: nx.Graph, n_trials: int):
@@ -243,7 +243,7 @@ def figure7b(filename: str, nx_graph: nx.Graph, n_trials: int):
         plt.plot(deployments, results[i], label=attacks[i][0])
     plt.legend()
     plt.xlabel("Deployment (top ISPs)")
-    plt.ylabel("Attacker's Success Rate")
+    plt.ylabel("Attacker's Success Rate (in %)")
     plt.savefig(filename)
 
 
@@ -282,7 +282,7 @@ def figure7c(filename: str, nx_graph: nx.Graph, n_trials: int):
         plt.plot(deployments, results[i], label=attacks[i][0])
     plt.legend()
     plt.xlabel("Deployment (top ISPs)")
-    plt.ylabel("Attacker's Success Rate")
+    plt.ylabel("Attacker's Success Rate (in %)")
     plt.savefig(filename)
 
 def figure8(filename: str, nx_graph: nx.Graph, n_trials: int, p: float):
@@ -331,7 +331,7 @@ def figure8(filename: str, nx_graph: nx.Graph, n_trials: int, p: float):
     plt.plot(deployments, line6_results, label="ASPA in partial deployment")
     plt.legend()
     plt.xlabel("Expected Deployment (top ISPs)")
-    plt.ylabel("Attacker's Success Rate")
+    plt.ylabel("Attacker's Success Rate (in %)")
     plt.savefig(filename)
 
 def figure8a(filename: str, nx_graph: nx.Graph, n_trials: int):
@@ -372,7 +372,7 @@ def figure9(filename: str, nx_graph: nx.Graph, trials: List[Tuple[AS_ID, AS_ID]]
     plt.plot(deployments, np.repeat(line2_results, 11), label="RPKI (full deployment)", linestyle="--")
     plt.legend()
     plt.xlabel("Deployment (top ISPs)")
-    plt.ylabel("Attacker's Success Rate")
+    plt.ylabel("Attacker's Success Rate (in %)")
     plt.savefig(filename)
 
 

@@ -217,9 +217,10 @@ def figure8_line_3_aspa_partial(
 ) -> List[Fraction]:
     results = []
     for _ in range(20):
-        graph = ASGraph(nx_graph, policy=ASPAPolicy())
+        graph = ASGraph(nx_graph, policy=RPKIPolicy())
         for asys in graph.identify_top_isps(int(deployment / p)):
             if random.random() < p:
+                asys.policy = ASPAPolicy()
                 asys.aspa_enabled = True
         results.extend(figure2a_experiment(graph, trials, n_hops=1))
     return results
@@ -266,7 +267,7 @@ def attacker_success_rate(graph: ASGraph, attacker: AS, victim: AS) -> Fraction:
             if attacker in route.path:
                 n_bad_routes += 1
     #Fraction creates a "Bruch" with the first value as numerator and the second as denominator
-    return Fraction(n_bad_routes, n_total_routes)
+    return Fraction(n_bad_routes, n_total_routes)*100
 
 class Experiment(mp.Process, abc.ABC):
     input_queue: mp.Queue

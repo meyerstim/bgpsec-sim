@@ -27,16 +27,12 @@ def evaluate(input: str, output: str, threshold: int) -> None:
     for elements in area:
         z.append(elements[2])
 
-    #Converts Fraction to percent of attacker-success-rate
-    data_percent = [i * 5 for i in data]
-
-
 
     #Evaluate first bare figure
     fig = plt.figure(figsize=(10, 10))
     ax = fig.add_subplot(111, projection='3d')
     ax.grid()
-    image = ax.scatter(x, y, z, c=data_percent, cmap=plt.cm.tab10)
+    image = ax.scatter(x, y, z, c=data, cmap=plt.cm.tab10)
     cbar = fig.colorbar(image, shrink=0.6, pad=0.1)
     cbar.set_label('\n attacker-success-rate (in %)')
     ax.set_title('ASPA in various deployment scenarios; bare data')
@@ -52,7 +48,7 @@ def evaluate(input: str, output: str, threshold: int) -> None:
     zClean = z
     count = 0
 
-    for elements in data_percent:
+    for elements in data:
         if elements > threshold:
             xClean.pop(count)
             yClean.pop(count)
