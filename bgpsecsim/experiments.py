@@ -83,8 +83,9 @@ def figure2a_line_6_aspa_partial(
         deployment: int,
         trials: List[Tuple[AS_ID, AS_ID]]
 ) -> List[Fraction]:
-    graph = ASGraph(nx_graph, policy=ASPAPolicy())
+    graph = ASGraph(nx_graph, policy=RPKIPolicy())
     for asys in graph.identify_top_isps(deployment):
+        asys.policy = ASPAPolicy()
         asys.aspa_enabled = True
     return figure2a_experiment(graph, trials, n_hops=1)
 
@@ -122,7 +123,6 @@ def figure2a_experiment(
     result_queue: mp.Queue = mp.Queue()
     workers = [Figure2aExperiment(trial_queue, result_queue, graph, n_hops)
                for _ in range(PARALLELISM)]
-    # TODO "EOFError: Ran out of input" Error is thrown, when entering for
     for worker in workers:
         worker.start()
 
@@ -173,7 +173,7 @@ def figure7c(
         deployment: int,
         trials: List[Tuple[AS_ID, AS_ID]]
 ) -> List[Fraction]:
-    graph = ASGraph(nx_graph, policy=ASPAPolicy())
+    graph = ASGraph(nx_graph, policy=RPKIPolicy())
     for asys in graph.identify_top_isps(deployment):
         asys.policy = ASPAPolicy()
         asys.aspa_enabled = True
