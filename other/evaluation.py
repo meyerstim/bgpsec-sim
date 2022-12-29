@@ -9,7 +9,7 @@ def evaluate(input: str, output: str, threshold: int) -> None:
     x = []
     y = []
     z = []
-    length = round(len(data) ** (1. / 3))-1
+    length = (100/round(len(data) ** (1. / 3)))
 
     deploymentsTierThree = np.arange(0, 101, length)
     deploymentsTierTwo = np.arange(0, 101, length)

@@ -485,9 +485,9 @@ def figure10_3d(filename: str, nx_graph: nx.Graph, n_trials:int):
     stub_asyss = list(as_graph.asyss_by_customer_count(nx_graph, 0, 0))
     trials = [(random.choice(stub_asyss), random.choice(large_asyss)) for _ in range(n_trials)]
 
-    deploymentsTierThree = np.arange(0, 99, 20)
-    deploymentsTierTwo = np.arange(0, 99, 20)
-    deploymentsTierOne = np.arange(0, 99, 20)
+    deploymentsTierThree = np.arange(0, 101, 10)
+    deploymentsTierTwo = np.arange(0, 101, 10)
+    deploymentsTierOne = np.arange(0, 101, 10)
 
     line1_results = []
     for deployment in deploymentsTierThree:
@@ -496,7 +496,7 @@ def figure10_3d(filename: str, nx_graph: nx.Graph, n_trials:int):
                 print(f"ASPA deployment = {deployment3, deployment2, deployment})")
                 line1_results.append(fmean(experiments.figure10_aspa(nx_graph, [deployment, deployment2], trials, deployment3)))
         data_between = np.asarray(line1_results)
-        np.savetxt(filename+'_backup'+deployment+'.csv', data_between, delimiter=',')         
+        np.savetxt(filename+'_backup'+str(deployment)+'.csv', data_between, delimiter=',')
 
 
     data = np.asarray(line1_results)
@@ -504,7 +504,7 @@ def figure10_3d(filename: str, nx_graph: nx.Graph, n_trials:int):
 
     print(line1_results)
 
-    eval.evaluate(data, filename, 10)
+    #eval.evaluate(data, filename, 10)
 
 
 
