@@ -80,7 +80,7 @@ def parse_as_rel_file(filename: str) -> nx.Graph:
 
 
 class ASGraph(object):
-    __slots__ = ['asyss', 'graph', 'aspaIsSet']
+    __slots__ = ['asyss', 'graph']
 
     asyss: Dict[AS_ID, AS]
     tierOne = []
@@ -89,6 +89,11 @@ class ASGraph(object):
 
     def __init__(self, graph: nx.Graph, policy: RoutingPolicy = DefaultPolicy()):
         self.asyss = {}
+        self.tierOne.clear()
+        self.tierTwo.clear()
+        self.tierThree.clear()
+        print(len(self.tierOne))
+
         self.aspaIsSet = False
         for as_id in graph.nodes:
             self.asyss[as_id] = AS(as_id, policy)
@@ -115,22 +120,20 @@ class ASGraph(object):
         # Tier1: do not have providers
         # Tier2: do have both providers and customers
         # Tier3: do not have customers
-        if not self.aspaIsSet:
-            for as_id in graph.nodes:
-                providers = len(self.asyss[as_id].get_providers())
-                customers = len(self.asyss[as_id].get_customers())
-                if customers == 0:
-                    self.tierThree.append(as_id)
-                elif providers == 0:
-                    self.tierOne.append(as_id)
-                else:
-                    self.tierTwo.append(as_id)
-            self.aspaIsSet = True
+        for as_id in graph.nodes:
+            providers = len(self.asyss[as_id].get_providers())
+            customers = len(self.asyss[as_id].get_customers())
+            if customers == 0:
+                self.tierThree.append(as_id)
+            elif providers == 0:
+                self.tierOne.append(as_id)
+            else:
+                self.tierTwo.append(as_id)
 
-    print(len(tierTwo))
 
     def get_asys(self, as_id: AS_ID) -> Optional[AS]:
         return self.asyss.get(as_id, None)
+
     def get_tierOne(self):
         return self.tierOne
 
