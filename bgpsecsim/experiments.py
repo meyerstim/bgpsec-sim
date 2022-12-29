@@ -107,7 +107,7 @@ def figure2a_line_7_aspa_optimal(
 
     print(len(graph.get_tierThree()))
 
-    print (len(graph.get_tierOne())+len(graph.get_tierTwo())+len(graph.get_tierThree()))
+    print(len(graph.get_tierOne())+len(graph.get_tierTwo())+len(graph.get_tierThree()))
 
     for asys in random.sample(graph.get_tierTwo(), int(len(graph.get_tierTwo()) / 100 * tierTwo)):
         graph.get_asys(asys).aspa_enabled = True
