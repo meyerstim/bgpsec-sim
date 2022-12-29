@@ -120,8 +120,10 @@ def figure2(filename: str, nx_graph: nx.Graph, trials: List[Tuple[AS_ID, AS_ID]]
     print("ASPA in partial deployment: ", line6_results)
 
     line7_results = fmean(experiments.figure2a_line_7_aspa_optimal(nx_graph, trials))
-    print("ASPA (optimal deployment) ", line7_results)
+    print("ASPA (50% deployment) ", line7_results)
 
+    line8_results = fmean(experiments.figure2a_line_8_aspa_full(nx_graph, trials))
+    print("ASPA (full deployment) ", line8_results)
 
     plt.figure(figsize=(10, 7))
     plt.plot(deployments, line1_results, label="Path-end-validation (partial deployment)")
@@ -130,7 +132,8 @@ def figure2(filename: str, nx_graph: nx.Graph, trials: List[Tuple[AS_ID, AS_ID]]
     plt.plot(deployments, np.repeat(line4_results, 11), label="RPKI (full deployment)", linestyle="--")
     plt.plot(deployments, np.repeat(line5_results, 11), label="BGPsec (full deployment, legacy allowed)", linestyle="--")
     plt.plot(deployments, line6_results, label="ASPA (partial deployment)")
-    plt.plot(deployments, np.repeat(line7_results, 11), label="ASPA (optimal deployment)", linestyle="--")
+    plt.plot(deployments, np.repeat(line7_results, 11), label="ASPA (50% deployment)", linestyle="--")
+    plt.plot(deployments, np.repeat(line8_results, 11), label="ASPA (full deployment)", linestyle="--")
     plt.legend()
     plt.xlabel("Deployment at number of top ISPs, ranked by customer count")
     plt.ylabel("Attacker's Success Rate (in %)")
@@ -165,17 +168,17 @@ def figure4(filename: str, nx_graph: nx.Graph, n_trials: int):
     print("BGPsec (full deployment, legacy allowed): ", line2_results)
 
     line3_results = fmean(experiments.figure2a_line_8_aspa_full(nx_graph, trials))
-    print("ASPA (optimal deployment) ", line3_results)
+    print("ASPA (full deployment) ", line3_results)
 
     line4_results = fmean(experiments.figure2a_line_7_aspa_optimal(nx_graph, trials))
-    print("ASPA (optimal deployment) ", line4_results)
+    print("ASPA (50% deployment) ", line4_results)
 
 
     plt.figure(figsize=(10, 5))
     plt.plot(hops, line1_results, label="k-hop attacker")
     plt.plot(hops, np.repeat(line2_results, 11), label="BGPsec (full deployment, legacy allowed)", linestyle="--")
-    plt.plot(hops, np.repeat(line2_results, 11), label="ASPA (optimal deployment)", linestyle="--")
-    plt.plot(hops, np.repeat(line2_results, 11), label="ASPA (full deployment)", linestyle="--")
+    plt.plot(hops, np.repeat(line4_results, 11), label="ASPA (50% deployment)", linestyle="--")
+    plt.plot(hops, np.repeat(line3_results, 11), label="ASPA (full deployment)", linestyle="--")
     plt.legend()
     plt.xlabel("Hops")
     plt.ylabel("Attacker's Success Rate (in %)")
@@ -375,7 +378,7 @@ def figure8(filename: str, nx_graph: nx.Graph, n_trials: int, p: float):
     print("ASPA in partial deployment: ", line6_results)
 
     line7_results = fmean(experiments.figure2a_line_7_aspa_optimal(nx_graph, trials))
-    print("ASPA (optimal deployment): ", line7_results)
+    print("ASPA (50% deployment): ", line7_results)
 
 
     plt.figure(figsize=(10, 7))
@@ -385,7 +388,7 @@ def figure8(filename: str, nx_graph: nx.Graph, n_trials: int, p: float):
     plt.plot(deployments, np.repeat(line4_results, 11), label="RPKI (full deployment)", linestyle="--")
     plt.plot(deployments, np.repeat(line5_results, 11), label="BGPsec (full deployment, legacy allowed)", linestyle="--")
     plt.plot(deployments, line6_results, label="ASPA in partial deployment")
-    plt.plot(deployments, np.repeat(line7_results, 11), label="ASPA (optimal deployment)", linestyle="--")
+    plt.plot(deployments, np.repeat(line7_results, 11), label="ASPA (50% deployment)", linestyle="--")
     plt.legend()
     plt.xlabel("Expected Deployment (top ISPs)")
     plt.ylabel("Attacker's Success Rate (in %)")
