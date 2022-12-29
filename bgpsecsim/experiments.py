@@ -85,7 +85,6 @@ def figure2a_line_6_aspa_partial(
 ) -> List[Fraction]:
     graph = ASGraph(nx_graph, policy=ASPAPolicy())
     for asys in graph.identify_top_isps(deployment):
-        asys.policy = ASPAPolicy()
         asys.aspa_enabled = True
     return figure2a_experiment(graph, trials, n_hops=1)
 
@@ -110,6 +109,16 @@ def figure2a_line_7_aspa_optimal(
         #graph.get_asys(asys).policy = ASPAPolicy()
         graph.get_asys(asys).aspa_enabled = True
 
+    return figure2a_experiment(graph, trials, n_hops=1)
+
+
+def figure2a_line_8_aspa_full(
+        nx_graph: nx.Graph,
+        trials: List[Tuple[AS_ID, AS_ID]]
+) -> List[Fraction]:
+    graph = ASGraph(nx_graph, policy=ASPAPolicy())
+    for asys in graph.asyss.values():
+        asys.aspa_enabled = True
     return figure2a_experiment(graph, trials, n_hops=1)
 
 def run_trial(graph, victim_id, attacker_id, n_hops):
@@ -195,6 +204,29 @@ def figure7c(
         asys.aspa_enabled = True
     return figure2a_experiment(graph, trials, n_hops=1)
 
+# ASPA deployed by 50% of all AS
+def figure7d(
+        nx_graph: nx.Graph,
+        deployment: int,
+        trials: List[Tuple[AS_ID, AS_ID]]
+) -> List[Fraction]:
+    graph = ASGraph(nx_graph, policy=RPKIPolicy())
+
+    tierOne = 50
+    tierTwo = 50
+    tierThree = 50
+
+    for asys in random.sample(graph.get_tierOne(), int(len(graph.get_tierOne()) / 100 * tierOne)):
+        # graph.get_asys(asys).policy = ASPAPolicy()
+        graph.get_asys(asys).aspa_enabled = True
+    for asys in random.sample(graph.get_tierTwo(), int(len(graph.get_tierTwo()) / 100 * tierTwo)):
+        # graph.get_asys(asys).policy = ASPAPolicy()
+        graph.get_asys(asys).aspa_enabled = True
+    for asys in random.sample(graph.get_tierThree(), int(len(graph.get_tierThree()) / 100 * tierThree)):
+        # graph.get_asys(asys).policy = ASPAPolicy()
+        graph.get_asys(asys).aspa_enabled = True
+    return figure2a_experiment(graph, trials, n_hops=1)
+
 def figure8_line_1_next_as(
         nx_graph: nx.Graph,
         deployment: int,
@@ -233,10 +265,9 @@ def figure8_line_3_aspa_partial(
 ) -> List[Fraction]:
     results = []
     for _ in range(20):
-        graph = ASGraph(nx_graph, policy=RPKIPolicy())
+        graph = ASGraph(nx_graph, policy=ASPAPolicy())
         for asys in graph.identify_top_isps(int(deployment / p)):
             if random.random() < p:
-                asys.policy = ASPAPolicy()
                 asys.aspa_enabled = True
         results.extend(figure2a_experiment(graph, trials, n_hops=1))
     return results
