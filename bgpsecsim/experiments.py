@@ -15,7 +15,7 @@ from bgpsecsim.routing_policy import (
     BGPsecHighSecPolicy, BGPsecMedSecPolicy, BGPsecLowSecPolicy, ASPAPolicy
 )
 
-PARALLELISM = 32
+PARALLELISM = 100
 
 def figure2a_line_1_next_as(
         nx_graph: nx.Graph,
@@ -191,9 +191,8 @@ def figure7c(
         deployment: int,
         trials: List[Tuple[AS_ID, AS_ID]]
 ) -> List[Fraction]:
-    graph = ASGraph(nx_graph, policy=RPKIPolicy())
+    graph = ASGraph(nx_graph, policy=ASPAPolicy())
     for asys in graph.identify_top_isps(deployment):
-        asys.policy = ASPAPolicy()
         asys.aspa_enabled = True
     return figure2a_experiment(graph, trials, n_hops=1)
 
@@ -203,20 +202,17 @@ def figure7d(
         deployment: int,
         trials: List[Tuple[AS_ID, AS_ID]]
 ) -> List[Fraction]:
-    graph = ASGraph(nx_graph, policy=RPKIPolicy())
+    graph = ASGraph(nx_graph, policy=ASPAPolicy())
 
     tierOne = 50
     tierTwo = 50
     tierThree = 50
 
     for asys in random.sample(graph.get_tierOne(), int(len(graph.get_tierOne()) / 100 * tierOne)):
-        # graph.get_asys(asys).policy = ASPAPolicy()
         graph.get_asys(asys).aspa_enabled = True
     for asys in random.sample(graph.get_tierTwo(), int(len(graph.get_tierTwo()) / 100 * tierTwo)):
-        # graph.get_asys(asys).policy = ASPAPolicy()
         graph.get_asys(asys).aspa_enabled = True
     for asys in random.sample(graph.get_tierThree(), int(len(graph.get_tierThree()) / 100 * tierThree)):
-        # graph.get_asys(asys).policy = ASPAPolicy()
         graph.get_asys(asys).aspa_enabled = True
     return figure2a_experiment(graph, trials, n_hops=1)
 

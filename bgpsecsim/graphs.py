@@ -92,11 +92,11 @@ def figure2(filename: str, nx_graph: nx.Graph, trials: List[Tuple[AS_ID, AS_ID]]
     #Here the percentage of deployment is set, current from 0 to full deployment by top ISP, incrementing by 10% everytime
     deployments = np.arange(0, 110, 10)
 
-    #line1_results = []
-    #for deployment in deployments:
-    #    print(f"Next-AS (deployment = {deployment})")
-    #    line1_results.append(fmean(experiments.figure2a_line_1_next_as(nx_graph, deployment, trials)))
-    #print("Next-AS: ", line1_results)
+    line1_results = []
+    for deployment in deployments:
+        print(f"Next-AS (deployment = {deployment})")
+        line1_results.append(fmean(experiments.figure2a_line_1_next_as(nx_graph, deployment, trials)))
+    print("Next-AS: ", line1_results)
 
     #line2_results = []
     #for deployment in deployments:
@@ -126,7 +126,7 @@ def figure2(filename: str, nx_graph: nx.Graph, trials: List[Tuple[AS_ID, AS_ID]]
     print("ASPA (full deployment) ", line8_results)
 
     plt.figure(figsize=(10, 7))
-    #plt.plot(deployments, line1_results, label="Path-end-validation (partial deployment)")
+    plt.plot(deployments, line1_results, label="Path-end-validation (partial deployment)")
     #plt.plot(deployments, line2_results, label="BGPsec (partial deployment)")
     #plt.plot(deployments, np.repeat(line3_results, 11), label="2-hop")
     plt.plot(deployments, np.repeat(line4_results, 11), label="RPKI (full deployment)", linestyle="--")
