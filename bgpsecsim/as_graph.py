@@ -89,6 +89,7 @@ class ASGraph(object):
 
     def __init__(self, graph: nx.Graph, policy: RoutingPolicy = DefaultPolicy()):
         self.asyss = {}
+        aspaIsSet = False
         for as_id in graph.nodes:
             self.asyss[as_id] = AS(as_id, policy)
         # Looks for all edges in the before created graph;
@@ -114,22 +115,22 @@ class ASGraph(object):
         # Tier1: do not have providers
         # Tier2: do have both providers and customers
         # Tier3: do not have customers
-        for as_id in graph.nodes:
-            providers = len(self.asyss[as_id].get_providers())
-            customers = len(self.asyss[as_id].get_customers())
-            if customers == 0:
-                self.tierThree.append(as_id)
-            elif providers == 0:
-                self.tierOne.append(as_id)
-            else:
-                self.tierTwo.append(as_id)
+        if not aspaIsSet:
+            for as_id in graph.nodes:
+                providers = len(self.asyss[as_id].get_providers())
+                customers = len(self.asyss[as_id].get_customers())
+                if customers == 0:
+                    self.tierThree.append(as_id)
+                elif providers == 0:
+                    self.tierOne.append(as_id)
+                else:
+                    self.tierTwo.append(as_id)
+            aspaIsSet = True
 
     print(len(tierTwo))
 
-
     def get_asys(self, as_id: AS_ID) -> Optional[AS]:
         return self.asyss.get(as_id, None)
-
     def get_tierOne(self):
         return self.tierOne
 
@@ -198,9 +199,7 @@ class ASGraph(object):
     def _build_reachability_graph(self) -> nx.DiGraph:
         graph = nx.DiGraph()
         for asys in self.asyss.values():
-            #print (asys.as_id)
             asysInteger = int(asys.as_id)
-            # TODO Hier wird Error geworfen durch Vergleich 1 << asys.as_id
             graph.add_node(('l', asysInteger), reachable_from=(1 << asysInteger))
             graph.add_node(('r', asysInteger), reachable_from=0)
             graph.add_edge(('l', asysInteger), ('r', asys))
