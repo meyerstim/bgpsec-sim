@@ -8,7 +8,7 @@ class DefaultPolicy(RoutingPolicy):
         # not in combination with return, inverts the value
         return not route.contains_cycle()
         # If Route contains a cycle, then it returns true
-        # -> the not inverts the bool and so the Route is declined as there is a cycel in it
+        # -> the not inverts the bool and so the Route is declined as there is a cycle in it
 
     def prefer_route(self, current: Route, new: Route) -> bool:
         # assert triggers error as soon as condition is false, in this case, if both final AS aren't the same
@@ -171,22 +171,22 @@ class ASPAPolicy(DefaultPolicy):
                 aspa_unknown = True
 
             # Accepts the route if none of the elements with ASPA activated has returned INVALID
-        return super().accept_route(route) and not aspa_invalid
+        return super().accept_route(route) and not route.origin_invalid and not aspa_invalid
 
     # Lambda takes several arguments, but only has one expression
-    def preference_rules(self) -> Generator[Callable[[Route], int], None, None]:
-        # TODO Set preference Rules
-        # Prefer fully VALID
-        # yield lambda route: not route.aspa_unknown
-        # Prefer VALID and UNKNOWN; discard all INVALID
-        # yield lambda route: not ("INVALID" in aspa_evaluation)
+    #def preference_rules(self) -> Generator[Callable[[Route], int], None, None]:
+    #    # TODO Set preference Rules
+    #    # Prefer fully VALID
+    #    # yield lambda route: not route.aspa_unknown
+    #    # Prefer VALID and UNKNOWN; discard all INVALID
+    #    # yield lambda route: not ("INVALID" in aspa_evaluation)
 
-        # 1. Local preferences
-        def local_pref(route):
-            relation = route.final.get_relation(route.first_hop)
-            return relation.value if relation else -1
-        yield local_pref
-        # 2. AS-path length
-        yield lambda route: route.length
-        # 3. Next hop AS number
-        yield lambda route: route.first_hop.as_id
+    #    # 1. Local preferences
+    #    def local_pref(route):
+    #        relation = route.final.get_relation(route.first_hop)
+    #        return relation.value if relation else -1
+    #    yield local_pref
+    #    # 2. AS-path length
+    #    yield lambda route: route.length
+    #    # 3. Next hop AS number
+    #    yield lambda route: route.first_hop.as_id
