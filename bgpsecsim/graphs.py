@@ -15,6 +15,7 @@ from bgpsecsim.asys import AS_ID
 import bgpsecsim.as_graph as as_graph
 from bgpsecsim.as_graph import ASGraph
 import bgpsecsim.experiments as experiments
+import other.evaluation as eval
 
 def get_attacks():
     return [
@@ -426,11 +427,13 @@ def figure10(filename: str, nx_graph: nx.Graph, n_trials:int, tierOne:int):
     plt.savefig(filename)
 
 def figure10_3d(filename: str, nx_graph: nx.Graph, n_trials:int):
-    trials = uniform_random_trials(nx_graph, n_trials)
+    large_asyss = list(as_graph.asyss_by_customer_count(nx_graph, 250, None))
+    stub_asyss = list(as_graph.asyss_by_customer_count(nx_graph, 0, 0))
+    trials = [(random.choice(stub_asyss), random.choice(large_asyss)) for _ in range(n_trials)]
 
-    deploymentsTierThree = np.arange(0, 101, 5)
-    deploymentsTierTwo = np.arange(0, 101, 5)
-    deploymentsTierOne = np.arange(0, 101, 5)
+    deploymentsTierThree = np.arange(0, 99, 20)
+    deploymentsTierTwo = np.arange(0, 99, 20)
+    deploymentsTierOne = np.arange(0, 99, 20)
 
     line1_results = []
     for deployment in deploymentsTierThree:
@@ -444,22 +447,9 @@ def figure10_3d(filename: str, nx_graph: nx.Graph, n_trials:int):
 
     print(line1_results)
 
-    X = np.reshape(deploymentsTierOne, (len(deploymentsTierOne), -1))
-    Y = np.reshape(deploymentsTierTwo, (len(deploymentsTierOne), -1))
-    Z = np.reshape(line1_results, (len(deploymentsTierOne), -1))
+    eval.evaluate(data, filename, 10)
 
-    plt.figure(figsize=(10, 7))
-    ax = plt.axes(projection='3d')
-    ax.grid()
 
-    ax.plot_surface(X, Y, Z, cmap=cm.coolwarm)
-    ax.set_title('ASPA in various deployment scenarios')
-
-    ax.set_xlabel('Tier One')
-    ax.set_ylabel('Tier Two')
-    ax.set_zlabel('Attackers Success Rate')
-
-    plt.savefig(filename)
 
 
 def figure10_100(filename: str, nx_graph: nx.Graph, n_trials: int):
