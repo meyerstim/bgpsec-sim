@@ -95,18 +95,12 @@ def figure2a_line_7_aspa_optimal(
     graph = ASGraph(nx_graph, policy=ASPAPolicy())
 
     # Values here have to be set, to use ASPA for the desired percentage by AS categorized in certain Tier
-    tierOne = 50
-    tierTwo = 50
-    tierThree = 50
+    tierTwo = 20
+    tierThree = 20
 
-    for asys in random.sample(graph.get_tierOne(), int(len(graph.get_tierOne()) / 100 * tierOne)):
-        #graph.get_asys(asys).policy = ASPAPolicy()
-        graph.get_asys(asys).aspa_enabled = True
     for asys in random.sample(graph.get_tierTwo(), int(len(graph.get_tierTwo()) / 100 * tierTwo)):
-        #graph.get_asys(asys).policy = ASPAPolicy()
         graph.get_asys(asys).aspa_enabled = True
     for asys in random.sample(graph.get_tierThree(), int(len(graph.get_tierThree()) / 100 * tierThree)):
-        #graph.get_asys(asys).policy = ASPAPolicy()
         graph.get_asys(asys).aspa_enabled = True
 
     return figure2a_experiment(graph, trials, n_hops=1)
