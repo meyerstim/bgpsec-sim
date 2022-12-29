@@ -80,7 +80,7 @@ def parse_as_rel_file(filename: str) -> nx.Graph:
 
 
 class ASGraph(object):
-    __slots__ = ['asyss', 'graph']
+    __slots__ = ['asyss', 'graph', 'aspaIsSet']
 
     asyss: Dict[AS_ID, AS]
     tierOne = []
@@ -89,7 +89,7 @@ class ASGraph(object):
 
     def __init__(self, graph: nx.Graph, policy: RoutingPolicy = DefaultPolicy()):
         self.asyss = {}
-        aspaIsSet = False
+        self.aspaIsSet = False
         for as_id in graph.nodes:
             self.asyss[as_id] = AS(as_id, policy)
         # Looks for all edges in the before created graph;
@@ -115,7 +115,7 @@ class ASGraph(object):
         # Tier1: do not have providers
         # Tier2: do have both providers and customers
         # Tier3: do not have customers
-        if not aspaIsSet:
+        if not self.aspaIsSet:
             for as_id in graph.nodes:
                 providers = len(self.asyss[as_id].get_providers())
                 customers = len(self.asyss[as_id].get_customers())
@@ -125,7 +125,7 @@ class ASGraph(object):
                     self.tierOne.append(as_id)
                 else:
                     self.tierTwo.append(as_id)
-            aspaIsSet = True
+            self.aspaIsSet = True
 
     print(len(tierTwo))
 

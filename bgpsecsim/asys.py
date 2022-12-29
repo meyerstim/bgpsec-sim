@@ -122,7 +122,6 @@ class AS(object):
             origin_invalid=False,
             path_end_invalid=False,
             authenticated=self.bgp_sec_enabled,
-            # TODO Evtl. muss hier ASPA enabled Flag gesetzt werden
         )
 
     def forward_route(self, route: 'Route', next_hop: 'AS') -> 'Route':
@@ -132,7 +131,6 @@ class AS(object):
             origin_invalid=route.origin_invalid,
             path_end_invalid=route.path_end_invalid,
             authenticated=route.authenticated and next_hop.bgp_sec_enabled,
-            # TODO Evtl. muss hier ASPA enabled Flag gesetzt werden
         )
 
     def reset_routing_table(self) -> None:
