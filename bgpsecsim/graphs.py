@@ -495,6 +495,9 @@ def figure10_3d(filename: str, nx_graph: nx.Graph, n_trials:int):
             for deployment3 in deploymentsTierOne:
                 print(f"ASPA deployment = {deployment3, deployment2, deployment})")
                 line1_results.append(fmean(experiments.figure10_aspa(nx_graph, [deployment, deployment2], trials, deployment3)))
+        data_between = np.asarray(line1_results)
+        np.savetxt(filename+'_backup'+deployment+'.csv', data_between, delimiter=',')         
+
 
     data = np.asarray(line1_results)
     np.savetxt(filename+'.csv', data, delimiter=',')
