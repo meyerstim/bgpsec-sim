@@ -89,20 +89,20 @@ def figure2b(filename: str, nx_graph: nx.Graph, n_trials: int):
     return figure2(filename, nx_graph, trials)
 
 def figure2(filename: str, nx_graph: nx.Graph, trials: List[Tuple[AS_ID, AS_ID]]):
-    #Here the percentage of deployment is set, current from 0 to full deployment, incrementing by 10% everytime
+    #Here the percentage of deployment is set, current from 0 to full deployment by top ISP, incrementing by 10% everytime
     deployments = np.arange(0, 110, 10)
 
-    line1_results = []
-    for deployment in deployments:
-        print(f"Next-AS (deployment = {deployment})")
-        line1_results.append(fmean(experiments.figure2a_line_1_next_as(nx_graph, deployment, trials)))
-    print("Next-AS: ", line1_results)
+    #line1_results = []
+    #for deployment in deployments:
+    #    print(f"Next-AS (deployment = {deployment})")
+    #    line1_results.append(fmean(experiments.figure2a_line_1_next_as(nx_graph, deployment, trials)))
+    #print("Next-AS: ", line1_results)
 
-    line2_results = []
-    for deployment in deployments:
-        print(f"BGPsec in partial deployment (deployment = {deployment})")
-        line2_results.append(fmean(experiments.figure2a_line_2_bgpsec_partial(nx_graph, deployment, trials)))
-    print("BGPsec in partial deployment: ", line2_results)
+    #line2_results = []
+    #for deployment in deployments:
+    #    print(f"BGPsec in partial deployment (deployment = {deployment})")
+    #    line2_results.append(fmean(experiments.figure2a_line_2_bgpsec_partial(nx_graph, deployment, trials)))
+    #print("BGPsec in partial deployment: ", line2_results)
 
     #line3_results = fmean(experiments.figure2a_line_3_two_hop(nx_graph, trials))
     #print("2-hop: ", line3_results)
@@ -126,8 +126,8 @@ def figure2(filename: str, nx_graph: nx.Graph, trials: List[Tuple[AS_ID, AS_ID]]
     print("ASPA (full deployment) ", line8_results)
 
     plt.figure(figsize=(10, 7))
-    plt.plot(deployments, line1_results, label="Path-end-validation (partial deployment)")
-    plt.plot(deployments, line2_results, label="BGPsec (partial deployment)")
+    #plt.plot(deployments, line1_results, label="Path-end-validation (partial deployment)")
+    #plt.plot(deployments, line2_results, label="BGPsec (partial deployment)")
     #plt.plot(deployments, np.repeat(line3_results, 11), label="2-hop")
     plt.plot(deployments, np.repeat(line4_results, 11), label="RPKI (full deployment)", linestyle="--")
     plt.plot(deployments, np.repeat(line5_results, 11), label="BGPsec (full deployment, legacy allowed)", linestyle="--")

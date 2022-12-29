@@ -124,6 +124,8 @@ class ASGraph(object):
             else:
                 self.tierTwo.append(as_id)
 
+    print(len(tierTwo))
+
 
     def get_asys(self, as_id: AS_ID) -> Optional[AS]:
         return self.asyss.get(as_id, None)

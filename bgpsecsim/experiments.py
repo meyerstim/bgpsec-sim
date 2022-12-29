@@ -93,15 +93,24 @@ def figure2a_line_7_aspa_optimal(
         trials: List[Tuple[AS_ID, AS_ID]]
 ) -> List[Fraction]:
     graph = ASGraph(nx_graph, policy=ASPAPolicy())
-
     # Values here have to be set, to use ASPA for the desired percentage by AS categorized in certain Tier
     tierTwo = 20
     tierThree = 20
+
+    for a in graph.get_tierOne():
+        print(a)
+
+    print (len(graph.get_tierOne()))
+
+    print(len(graph.get_tierTwo()))
 
     for asys in random.sample(graph.get_tierTwo(), int(len(graph.get_tierTwo()) / 100 * tierTwo)):
         graph.get_asys(asys).aspa_enabled = True
     for asys in random.sample(graph.get_tierThree(), int(len(graph.get_tierThree()) / 100 * tierThree)):
         graph.get_asys(asys).aspa_enabled = True
+
+    print (len(graph.get_tierOne()))
+    print (len(graph.get_tierTwo()))
 
     return figure2a_experiment(graph, trials, n_hops=1)
 
