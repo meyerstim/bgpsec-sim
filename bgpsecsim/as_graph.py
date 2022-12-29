@@ -117,13 +117,12 @@ class ASGraph(object):
         for as_id in graph.nodes:
             providers = len(self.asyss[as_id].get_providers())
             customers = len(self.asyss[as_id].get_customers())
-            if customers == 0 and as_id not in self.tierThree:
+            if customers == 0:
                 self.tierThree.append(as_id)
-            elif providers == 0 and as_id not in self.tierOne:
+            elif providers == 0:
                 self.tierOne.append(as_id)
             else:
-                if as_id not in self.tierTwo:
-                    self.tierTwo.append(as_id)
+                self.tierTwo.append(as_id)
 
     print(len(tierTwo))
 
