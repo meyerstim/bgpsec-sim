@@ -92,9 +92,7 @@ class ASGraph(object):
         self.tierOne.clear()
         self.tierTwo.clear()
         self.tierThree.clear()
-        print(len(self.tierOne))
 
-        self.aspaIsSet = False
         for as_id in graph.nodes:
             self.asyss[as_id] = AS(as_id, policy)
         # Looks for all edges in the before created graph;

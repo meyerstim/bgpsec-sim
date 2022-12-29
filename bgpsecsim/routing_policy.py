@@ -130,12 +130,11 @@ class ASPAPolicy(DefaultPolicy):
 
         for index, r in enumerate(route.path):
             if index + 1 < len(route.path):
-                prev_el = route.path[index - 1]
+                # prev_el = route.path[index - 1]
                 curr_el = r
                 next_el = route.path[index + 1]
             else:
                 break
-
             if curr_el.aspa_enabled:
                 a = curr_el.get_aspa_providers()
                 # No ASPA Object present for current AS, in reality does not implement ASPA
@@ -162,31 +161,9 @@ class ASPAPolicy(DefaultPolicy):
                                     break
                                 else:
                                     aspa_invalid = True
-
-                    # If one element is invalid then whole route has to be discarded and not be accepted
-                    #aspa_invalid = True
-
             # If ASPA Flag is not set, so AS is seen as not implementing ASPA currently, returns status UNKNOWN
             else:
                 aspa_unknown = True
 
             # Accepts the route if none of the elements with ASPA activated has returned INVALID
         return super().accept_route(route) and not route.origin_invalid and not aspa_invalid
-
-    # Lambda takes several arguments, but only has one expression
-    #def preference_rules(self) -> Generator[Callable[[Route], int], None, None]:
-    #    # TODO Set preference Rules
-    #    # Prefer fully VALID
-    #    # yield lambda route: not route.aspa_unknown
-    #    # Prefer VALID and UNKNOWN; discard all INVALID
-    #    # yield lambda route: not ("INVALID" in aspa_evaluation)
-
-    #    # 1. Local preferences
-    #    def local_pref(route):
-    #        relation = route.final.get_relation(route.first_hop)
-    #        return relation.value if relation else -1
-    #    yield local_pref
-    #    # 2. AS-path length
-    #    yield lambda route: route.length
-    #    # 3. Next hop AS number
-    #    yield lambda route: route.first_hop.as_id
