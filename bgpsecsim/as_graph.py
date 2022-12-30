@@ -79,11 +79,11 @@ def parse_as_rel_file_pickle(filename: str) -> nx.Graph:
     return graph
 
 
-def parse_as_rel_file(filename: str) -> None:
+def parse_as_rel_file(filename: str) -> nx.Graph:
     if "pickle" in filename:
-        parse_as_rel_file_pickle(filename)
+        return parse_as_rel_file_pickle(filename)
     else:
-        parse_as_rel_file_CAIDA(filename)
+        return parse_as_rel_file_CAIDA(filename)
 
 class ASGraph(object):
     __slots__ = ['asyss', 'graph']

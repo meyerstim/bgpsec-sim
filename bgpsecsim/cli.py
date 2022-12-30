@@ -96,7 +96,6 @@ def generate(seed, trials, figure, as_rel_file, output_file):
         random.seed(seed)
 
     nx_graph = as_graph.parse_as_rel_file(as_rel_file)
-    print(as_rel_file)
     print("Loaded graph")
 
     func = getattr(graphs, figure)
