@@ -79,8 +79,8 @@ def parse_as_rel_file_pickle(filename: str) -> nx.Graph:
     return graph
 
 
-def parse_as_rel_file(filename: str) -> nx.Graph:
-    if ".pickle" in filename:
+def parse_as_rel_file(filename: str) -> None:
+    if "pickle" in filename:
         parse_as_rel_file_pickle(filename)
     else:
         parse_as_rel_file_CAIDA(filename)
