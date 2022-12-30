@@ -481,9 +481,11 @@ def figure10(filename: str, nx_graph: nx.Graph, n_trials:int, tierOne:int):
     plt.savefig(filename)
 
 def figure10_3d(filename: str, nx_graph: nx.Graph, n_trials:int):
-    large_asyss = list(as_graph.asyss_by_customer_count(nx_graph, 250, None))
-    stub_asyss = list(as_graph.asyss_by_customer_count(nx_graph, 0, 0))
-    trials = [(random.choice(stub_asyss), random.choice(large_asyss)) for _ in range(n_trials)]
+    # large_asyss = list(as_graph.asyss_by_customer_count(nx_graph, 250, None))
+    # stub_asyss = list(as_graph.asyss_by_customer_count(nx_graph, 0, 0))
+    # trials = [(random.choice(stub_asyss), random.choice(large_asyss)) for _ in range(n_trials)]
+
+    trials = uniform_random_trials(nx_graph, n_trials)
 
     deploymentsTierThree = np.arange(0, 101, 5)
     deploymentsTierTwo = np.arange(0, 101, 5)
