@@ -9,7 +9,7 @@ def evaluate(input: str, output: str, threshold: int) -> None:
     x = []
     y = []
     z = []
-    length = (100/round(len(data) ** (1. / 3)))
+    length = (100/round(len(data) ** (1. / 3))+1)
 
     deploymentsTierThree = np.arange(0, 101, length)
     deploymentsTierTwo = np.arange(0, 101, length)
@@ -35,7 +35,6 @@ def evaluate(input: str, output: str, threshold: int) -> None:
     image = ax.scatter(x, y, z, c=data, cmap=plt.cm.tab10)
     cbar = fig.colorbar(image, shrink=0.6, pad=0.1)
     cbar.set_label('\n attacker-success-rate (in %)')
-    ax.set_title('ASPA in various deployment scenarios; bare data')
     ax.set_xlabel('Tier One (Deployment-rate in %)')
     ax.set_ylabel('Tier Two (Deployment-rate in %)')
     ax.set_zlabel('Tier Three (Deployment-rate in %)')
@@ -65,7 +64,7 @@ def evaluate(input: str, output: str, threshold: int) -> None:
     imageNeu = aNeu.scatter(xClean, yClean, zClean, c=data_clean, cmap=plt.cm.tab10)
     cBarNeu = fig2.colorbar(imageNeu, shrink=0.6, pad=0.1)
     cBarNeu.set_label('\n attacker-success-rate (in %)')
-    aNeu.set_title('ASPA in various deployment scenarios; cleaned up by values over ' + str(threshold) + '%')
+    aNeu.set_title('Cleaned up by values over ' + str(threshold) + '%')
     aNeu.set_xlabel('Tier One (Deployment-rate in %)')
     aNeu.set_ylabel('Tier Two (Deployment-rate in %)')
     aNeu.set_zlabel('Tier Three (Deployment-rate in %)')

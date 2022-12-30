@@ -382,7 +382,7 @@ def figure8(filename: str, nx_graph: nx.Graph, n_trials: int, p: float):
 
 
     plt.figure(figsize=(10, 7))
-    plt.plot(deployments, line1_results, label="Next-AS")
+    plt.plot(deployments, line1_results, label="path-end-validation")
     plt.plot(deployments, line2_results, label="BGPsec in partial deployment")
     # plt.plot(deployments, np.repeat(line3_results, 11), label="2-hop")
     plt.plot(deployments, np.repeat(line4_results, 11), label="RPKI (full deployment)", linestyle="--")

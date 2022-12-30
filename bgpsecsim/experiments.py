@@ -223,8 +223,8 @@ def figure8_line_1_next_as(
         trials: List[Tuple[AS_ID, AS_ID]]
 ) -> List[Fraction]:
     results = []
+    graph = ASGraph(nx_graph, policy=RPKIPolicy())
     for _ in range(20):
-        graph = ASGraph(nx_graph, policy=RPKIPolicy())
         for asys in graph.identify_top_isps(int(deployment / p)):
             if random.random() < p:
                 asys.policy = PathEndValidationPolicy()
@@ -238,8 +238,8 @@ def figure8_line_2_bgpsec_partial(
         trials: List[Tuple[AS_ID, AS_ID]]
 ) -> List[Fraction]:
     results = []
+    graph = ASGraph(nx_graph, policy=RPKIPolicy())
     for _ in range(20):
-        graph = ASGraph(nx_graph, policy=RPKIPolicy())
         for asys in graph.identify_top_isps(int(deployment / p)):
             if random.random() < p:
                 asys.policy = BGPsecMedSecPolicy()
@@ -253,8 +253,8 @@ def figure8_line_3_aspa_partial(
         trials: List[Tuple[AS_ID, AS_ID]]
 ) -> List[Fraction]:
     results = []
+    graph = ASGraph(nx_graph, policy=ASPAPolicy())
     for _ in range(20):
-        graph = ASGraph(nx_graph, policy=ASPAPolicy())
         for asys in graph.identify_top_isps(int(deployment / p)):
             if random.random() < p:
                 asys.aspa_enabled = True
