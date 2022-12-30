@@ -485,9 +485,9 @@ def figure10_3d(filename: str, nx_graph: nx.Graph, n_trials:int):
     stub_asyss = list(as_graph.asyss_by_customer_count(nx_graph, 0, 0))
     trials = [(random.choice(stub_asyss), random.choice(large_asyss)) for _ in range(n_trials)]
 
-    deploymentsTierThree = np.arange(0, 101, 10)
-    deploymentsTierTwo = np.arange(0, 101, 10)
-    deploymentsTierOne = np.arange(0, 101, 10)
+    deploymentsTierThree = np.arange(0, 101, 5)
+    deploymentsTierTwo = np.arange(0, 101, 5)
+    deploymentsTierOne = np.arange(0, 101, 5)
 
     line1_results = []
     for deployment in deploymentsTierThree:
