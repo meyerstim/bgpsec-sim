@@ -9,7 +9,7 @@ def evaluate(input: str, output: str, threshold: int) -> None:
     x = []
     y = []
     z = []
-    length = (100/round(len(data) ** (1. / 3))+1)
+    length = (100/round(len(data) ** (1. / 3)-1))
 
     deploymentsTierThree = np.arange(0, 101, length)
     deploymentsTierTwo = np.arange(0, 101, length)
@@ -47,8 +47,10 @@ def evaluate(input: str, output: str, threshold: int) -> None:
     zClean = z
     count = 0
 
+    newThreshold = (max(data)-min(data))/100*threshold
+
     for elements in data:
-        if elements > threshold:
+        if elements > newThreshold:
             xClean.pop(count)
             yClean.pop(count)
             zClean.pop(count)
@@ -64,7 +66,7 @@ def evaluate(input: str, output: str, threshold: int) -> None:
     imageNeu = aNeu.scatter(xClean, yClean, zClean, c=data_clean, cmap=plt.cm.tab10)
     cBarNeu = fig2.colorbar(imageNeu, shrink=0.6, pad=0.1)
     cBarNeu.set_label('\n attacker-success-rate (in %)')
-    aNeu.set_title('Cleaned up by values over ' + str(threshold) + '%')
+    aNeu.set_title('Cleanup shows ' + str(threshold) + '% of all values \n with lowest attacker-success-rate')
     aNeu.set_xlabel('Tier One (Deployment-rate in %)')
     aNeu.set_ylabel('Tier Two (Deployment-rate in %)')
     aNeu.set_zlabel('Tier Three (Deployment-rate in %)')

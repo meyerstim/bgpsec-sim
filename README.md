@@ -65,13 +65,14 @@ Command "evaluation" can be used to generate a 3-dimensional graphic representat
 Data gets exported to .csv file, when "generate" function with the desired experiment was run. 
 This file can now be used to create graphic output.
 
-Value "threshold" can be used to get a more detailed version of the graphic. All data points which have an attacker-success rate worse then the given value, will be excluded from the graphic.
+Value "threshold" can be used to get a more detailed version of the graphic. Represents a percentage off all values.
+All data points which have an attacker-success rate worse then the given percentage, will be excluded from the graphic.
 This results in a graph with fewer data points, which allows a finer view.
 
 Several parameters have to be specified and passed along with the command:
 - input-file: path to the file with the values received by running the figure_10 experiment
 - output-file: path and desired name of the output graphic
-- threshold: Integer, values with worse success to be cut out from graphic
+- threshold: Integer, represents percentage
 
 ```bash
 $ pipenv run python -m bgpsecsim evaluate results.csv graphic -threshold 0.005
@@ -79,7 +80,12 @@ $ pipenv run python -m bgpsecsim evaluate results.csv graphic -threshold 0.005
 
 
 ## Other
-To use parallelization of the simulator change value for "PARALLELISM" in experiments.py to desired value
+To use parallelization of the simulator change value for "PARALLELISM" in experiments.py to desired value.
+
+Simulation framework does NOT work on Windows Systems.
+
+2-Hop Attacks were excluded from evaluation in graphs.py as they were not used in the current evaluation.
+They can be added to the evaluation by removing the comment brackets.
 
 
 
