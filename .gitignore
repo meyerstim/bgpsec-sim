@@ -1,5 +1,3 @@
 *.pyc
 .mypy_cache/
 .ipynb_checkpoints/
-other/results.csv
-outputs

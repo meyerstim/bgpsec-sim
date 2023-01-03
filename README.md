@@ -75,7 +75,7 @@ Several parameters have to be specified and passed along with the command:
 - threshold: Integer, represents percentage
 
 ```bash
-$ pipenv run python -m bgpsecsim evaluate results.csv graphic -threshold 0.005
+$ pipenv run python -m bgpsecsim evaluate results.csv graphic -threshold 15
 ```
 
 

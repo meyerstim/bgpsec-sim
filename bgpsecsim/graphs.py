@@ -122,8 +122,6 @@ def figure2(filename: str, nx_graph: nx.Graph, trials: List[Tuple[AS_ID, AS_ID]]
     line7_results = fmean(experiments.figure2a_line_7_aspa_optimal(nx_graph, trials))
     print("ASPA (50% deployment) ", line7_results)
 
-    line8_results = fmean(experiments.figure2a_line_8_aspa_full(nx_graph, trials))
-    print("ASPA (full deployment) ", line8_results)
 
     plt.figure(figsize=(10, 7))
     plt.plot(deployments, line1_results, label="Path-end-validation (partial deployment)")
@@ -133,7 +131,6 @@ def figure2(filename: str, nx_graph: nx.Graph, trials: List[Tuple[AS_ID, AS_ID]]
     plt.plot(deployments, np.repeat(line5_results, 11), label="BGPsec (full deployment, legacy allowed)", linestyle="--")
     plt.plot(deployments, line6_results, label="ASPA (partial deployment)")
     plt.plot(deployments, np.repeat(line7_results, 11), label="ASPA (50% deployment)", linestyle="--")
-    plt.plot(deployments, np.repeat(line8_results, 11), label="ASPA (full deployment)", linestyle="--")
     plt.legend()
     plt.xlabel("Deployment at number of top ISPs, ranked by customer count")
     plt.ylabel("Attacker's Success Rate (in %)")
