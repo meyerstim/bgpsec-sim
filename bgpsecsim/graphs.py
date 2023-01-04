@@ -339,20 +339,25 @@ def figure7d(filename: str, nx_graph: nx.Graph, n_trials: int):
 
 
 def figure8(filename: str, nx_graph: nx.Graph, n_trials: int, p: float):
-    trials = uniform_random_trials(nx_graph, n_trials)
+    large_asyss = list(as_graph.asyss_by_customer_count(nx_graph, 250, None))
+    stub_asyss = list(as_graph.asyss_by_customer_count(nx_graph, 0, 0))
+    trials = [(random.choice(large_asyss), random.choice(stub_asyss)) for _ in range(n_trials)]
+
     deployments = np.arange(0, 110, 10)
 
-
+    rand_state = random.getstate()
 
     line1_results = []
     for deployment in deployments:
         print(f"Next-AS (deployment = {deployment})")
+        random.setstate(rand_state)
         line1_results.append(fmean(experiments.figure8_line_1_next_as(nx_graph, deployment, p, trials)))
     print("Next-AS: ", line1_results)
 
     line2_results = []
     for deployment in deployments:
         print(f"BGPsec in partial deployment (deployment = {deployment})")
+        random.setstate(rand_state)
         line2_results.append(fmean(experiments.figure8_line_2_bgpsec_partial(nx_graph, deployment, p, trials)))
     print("BGPsec in partial deployment: ", line2_results)
 
@@ -368,6 +373,7 @@ def figure8(filename: str, nx_graph: nx.Graph, n_trials: int, p: float):
     line6_results = []
     for deployment in deployments:
         print(f"ASPA in partial deployment (deployment = {deployment})")
+        random.setstate(rand_state)
         line6_results.append(fmean(experiments.figure8_line_3_aspa_partial(nx_graph, deployment, p, trials)))
     print("ASPA in partial deployment: ", line6_results)
 
