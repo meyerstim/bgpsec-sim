@@ -11,7 +11,7 @@ git clone #Link to repository
 #Replace with Name of your repository you cloned to cd inside there
 cd # directory name of cloned repository
 #git checkout if neccessary as you need to change the branch of the repository
-git checkout working
+git checkout #Name of branch
 git pull
 pipenv run pip3 list
 pipenv run pip3 install click
